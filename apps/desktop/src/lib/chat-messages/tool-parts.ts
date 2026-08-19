@@ -1,4 +1,4 @@
-import { normalize } from '@/lib/text'
+import { firstStringField, normalize } from '@/lib/text'
 import { parseTodos } from '@/lib/todos'
 import type { SessionMessage } from '@/types/hermes'
 
@@ -18,18 +18,6 @@ function nextLiveToolId(name: string): string {
   liveToolCounter += 1
 
   return `live-tool:${name}:${liveToolCounter}`
-}
-
-function firstStringField(record: Record<string, unknown>, keys: readonly string[]): string {
-  for (const key of keys) {
-    const value = record[key]
-
-    if (typeof value === 'string' && value.trim()) {
-      return value.trim()
-    }
-  }
-
-  return ''
 }
 
 function normalizeToolMatchValue(value: string): string {

@@ -1,3 +1,4 @@
+import { isMissingRestEndpoint } from '@/lib/gateway-rpc'
 import { recordTranscriptTail } from '@/store/transcript-tail'
 import type {
   PaginatedSessions,
@@ -155,24 +156,6 @@ export function resetSidebarBatchCapability() {
   sidebarBatchEndpointMissing = false
 }
 
-// True only for "the route does not exist on this backend" shapes: the
-// backend catch-all ('404: {"detail":"No such API endpoint: ...}'), FastAPI's
-// bare 404 on headless serve (surfaces as '404: ...' directly or as
-// "Error invoking remote method 'hermes:api': Error: 404: ..." through the
-// IPC bridge), and the Electron JSON-guard ("endpoint is likely missing").
-// This GET has no path params, so a 404 status can only mean route-missing —
-// but transient failures (timeouts, 5xx, connection refused) must NOT match,
-// or one blip would silently degrade the fast path for the whole session.
-function isEndpointMissingError(err: unknown): boolean {
-  const message = err instanceof Error ? err.message : String(err)
-
-  return (
-    /no such api endpoint/i.test(message) ||
-    /endpoint is likely missing/i.test(message) ||
-    /(?:^\s*|error:\s*)404\b/i.test(message)
-  )
-}
-
 // Compatibility fallback: reassemble the three sidebar slices from the
 // per-slice endpoint, mirroring the batched route's semantics (min_messages=1,
 // archived excluded, recency order; every slice scoped to the caller's profile).
@@ -247,7 +230,9 @@ export async function listSidebarSessions(req: SidebarSessionsRequest): Promise<
       timeoutMs: SESSION_LIST_REQUEST_TIMEOUT_MS
     })
   } catch (err) {
-    if (!isEndpointMissingError(err)) {
+    // Safe to read a 404 as route-missing here: this GET has no path params,
+    // so it cannot 404 on a bad id.
+    if (!isMissingRestEndpoint(err)) {
       throw err
     }
 
