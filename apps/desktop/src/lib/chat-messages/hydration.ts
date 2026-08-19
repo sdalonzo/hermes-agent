@@ -4,13 +4,7 @@ import { extractImageRefs } from '@/lib/embedded-images'
 import { dedupeGeneratedImageEchoesInParts } from '@/lib/generated-images'
 import type { MessageReaction, SessionMessage } from '@/types/hermes'
 
-import {
-  assistantTextPart,
-  chatMessageText,
-  dedupeRepeatedTextInParts,
-  reasoningPart,
-  textPart
-} from './parts'
+import { assistantTextPart, chatMessageText, dedupeRepeatedTextInParts, reasoningPart, textPart } from './parts'
 import {
   applyStoredToolResult,
   applyStoredToolResultToParts,
@@ -85,7 +79,7 @@ function timelineTaskCount(metadata: SessionMessage['display_metadata']): number
   return typeof count === 'number' ? count : undefined
 }
 
-export function messageReactions(metadata: SessionMessage['display_metadata']): MessageReaction[] {
+function messageReactions(metadata: SessionMessage['display_metadata']): MessageReaction[] {
   const reactions = parseDisplayMetadata(metadata)?.reactions
 
   if (!Array.isArray(reactions)) {

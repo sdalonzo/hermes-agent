@@ -13,7 +13,7 @@ import { connectionScoped, profileScoped, STARTUP_REQUEST_TIMEOUT_MS } from './c
 // response reflects the persisted execution result. Agent jobs can run far
 // longer than the Electron fetch default; keep this override local to the one
 // synchronous long-operation endpoint rather than weakening all API timeouts.
-export const CRON_TRIGGER_REQUEST_TIMEOUT_MS = 24 * 60 * 60 * 1000
+const CRON_TRIGGER_REQUEST_TIMEOUT_MS = 24 * 60 * 60 * 1000
 
 // Cron jobs are stored per-profile (<HERMES_HOME>/cron/jobs.json), and the
 // backend's list endpoint defaults to 'all'. Pass a concrete profile key to

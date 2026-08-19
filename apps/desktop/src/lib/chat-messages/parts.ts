@@ -253,10 +253,6 @@ function appendStreamPart(
   return { index: next.length - 1, parts: next }
 }
 
-export function appendTextPart(parts: ChatMessagePart[], delta: string, timestamp?: number): ChatMessagePart[] {
-  return appendStreamPart(parts, 'text', delta, timestamp).parts
-}
-
 export function appendReasoningPart(parts: ChatMessagePart[], delta: string, timestamp?: number): ChatMessagePart[] {
   return appendStreamPart(parts, 'reasoning', delta, timestamp).parts
 }

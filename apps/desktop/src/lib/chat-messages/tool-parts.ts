@@ -4,10 +4,6 @@ import type { SessionMessage } from '@/types/hermes'
 
 import type { ChatMessage, ChatMessagePart, GatewayEventPayload } from './types'
 
-export function hasToolPart(message: ChatMessage): boolean {
-  return message.parts.some(part => part.type === 'tool-call')
-}
-
 function toolId(payload: GatewayEventPayload | undefined): string {
   return payload?.tool_id || payload?.tool_call_id || payload?.id || ''
 }

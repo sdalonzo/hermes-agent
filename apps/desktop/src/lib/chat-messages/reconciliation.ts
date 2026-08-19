@@ -57,10 +57,7 @@ const timelinePartMatch = (stored: ChatMessagePart, local: ChatMessagePart) => {
 }
 
 /** Keep richer live timing when durable hydration has only one timestamp per row. */
-export function reconcileLocalAssistantTimeline(
-  nextMessages: ChatMessage[],
-  currentMessages: ChatMessage[]
-): ChatMessage[] {
+function reconcileLocalAssistantTimeline(nextMessages: ChatMessage[], currentMessages: ChatMessage[]): ChatMessage[] {
   const localAssistants = currentMessages.filter(message => message.role === 'assistant' && !message.hidden)
   const matches = new Map<number, ChatMessage>()
   let localCursor = localAssistants.length - 1

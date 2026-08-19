@@ -1,8 +1,7 @@
-export { messageReactions, toChatMessages } from './hydration'
+export { toChatMessages } from './hydration'
 export {
   appendAssistantTextPart,
   appendReasoningPart,
-  appendTextPart,
   assistantTextPart,
   chatMessageText,
   collectUnspokenTurnSpeech,
@@ -14,6 +13,6 @@ export {
   textPart
 } from './parts'
 export type { UnspokenTurnSpeech } from './parts'
-export { branchGroupForUser, preserveLocalAssistantErrors, reconcileLocalAssistantTimeline } from './reconciliation'
-export { hasToolPart, sealOpenToolParts, upsertToolPart } from './tool-parts'
+export { branchGroupForUser, preserveLocalAssistantErrors } from './reconciliation'
+export { sealOpenToolParts, upsertToolPart } from './tool-parts'
 export type { ChatMessage, ChatMessagePart, GatewayEventPayload, TimelinePartMetadata } from './types'
