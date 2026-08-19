@@ -7,11 +7,13 @@ vi.mock('@/store/pet', () => ({
   $petRoamDir: { set: () => undefined }
 }))
 
+import { installWindowStateBridge, setDocumentHidden, type WindowStateBridge } from '../../test/window-state'
+
 import { usePetRoam } from './use-pet-roam'
 
 let root: Root | null = null
 let container: HTMLDivElement | null = null
-let windowStateCallback: ((payload: { isMinimized?: boolean; isVisible?: boolean }) => void) | null = null
+let windowState: WindowStateBridge
 
 function render(ui: ReactNode) {
   container = document.createElement('div')
@@ -33,29 +35,6 @@ function cleanup() {
   container?.remove()
   root = null
   container = null
-}
-
-function setVisibility(hidden: boolean) {
-  Object.defineProperty(document, 'hidden', { configurable: true, value: hidden })
-  Object.defineProperty(document, 'visibilityState', { configurable: true, value: hidden ? 'hidden' : 'visible' })
-}
-
-function installWindowStateBridge() {
-  windowStateCallback = null
-  Object.defineProperty(window, 'hermesDesktop', {
-    configurable: true,
-    value: {
-      onWindowStateChanged: vi.fn((callback: typeof windowStateCallback) => {
-        windowStateCallback = callback
-
-        return () => {
-          if (windowStateCallback === callback) {
-            windowStateCallback = null
-          }
-        }
-      })
-    }
-  })
 }
 
 function installRaf() {
@@ -89,9 +68,9 @@ describe('usePetRoam RAF scheduling', () => {
   beforeEach(() => {
     ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
     vi.useFakeTimers()
-    setVisibility(false)
+    setDocumentHidden(false)
     vi.spyOn(document, 'hasFocus').mockReturnValue(true)
-    installWindowStateBridge()
+    windowState = installWindowStateBridge()
     vi.spyOn(Math, 'random').mockReturnValue(0)
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
       bottom: 164,
@@ -110,7 +89,7 @@ describe('usePetRoam RAF scheduling', () => {
     cleanup()
     vi.useRealTimers()
     vi.restoreAllMocks()
-    setVisibility(false)
+    setDocumentHidden(false)
     delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
   })
 
@@ -129,13 +108,13 @@ describe('usePetRoam RAF scheduling', () => {
     render(<RoamHarness />)
     expect(vi.getTimerCount()).toBe(1)
 
-    windowStateCallback?.({ isMinimized: true, isVisible: false })
+    windowState.emit({ isMinimized: true, isVisible: false })
 
     expect(raf.cancel).not.toHaveBeenCalled()
     expect(raf.request).not.toHaveBeenCalled()
     expect(vi.getTimerCount()).toBe(0)
 
-    windowStateCallback?.({ isMinimized: false, isVisible: true })
+    windowState.emit({ isMinimized: false, isVisible: true })
 
     expect(raf.request).not.toHaveBeenCalled()
     expect(vi.getTimerCount()).toBe(1)

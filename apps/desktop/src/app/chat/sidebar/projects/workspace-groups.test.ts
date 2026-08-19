@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import type { HermesGitWorktree } from '@/global'
 import type { ProjectInfo, SessionInfo } from '@/types/hermes'
 
+import { makeSessionInfo } from '../../../../test/session-info'
+
 import {
   baseName,
   excludeProjectSessions,
@@ -25,24 +27,16 @@ import {
 let nextId = 0
 
 function makeSession(cwd: null | string, overrides: Partial<SessionInfo> = {}): SessionInfo {
-  return {
-    archived: false,
+  return makeSessionInfo({
     cwd,
-    ended_at: null,
     id: `s${nextId++}`,
-    input_tokens: 0,
-    is_active: false,
     last_active: 1_000,
     message_count: 1,
     model: 'claude',
-    output_tokens: 0,
-    preview: null,
     source: 'cli',
     started_at: 1_000,
-    title: null,
-    tool_call_count: 0,
     ...overrides
-  }
+  })
 }
 
 const lane = (over: Partial<SidebarSessionGroup> & Pick<SidebarSessionGroup, 'id' | 'label'>): SidebarSessionGroup => ({

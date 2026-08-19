@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { hiddenPaneProps, PANE_HIDDEN_ATTR } from '@/components/pane-shell/pane-visibility'
 import { $paneStates } from '@/store/panes'
 
+import { installWindowStateBridge, setDocumentHidden, type WindowStateBridge } from '../../../test/window-state'
 import { $terminalTakeover } from '../store'
 
 import { PersistentTerminal, TerminalSlot } from './persistent'
@@ -26,7 +27,7 @@ let mutationObserverCallback: MutationCallback | null = null
 let mutationObserveCalls: Array<{ options?: MutationObserverInit; target: Node }> = []
 let root: Root | null = null
 let container: HTMLDivElement | null = null
-let windowStateCallback: ((payload: { isMinimized?: boolean; isVisible?: boolean }) => void) | null = null
+let windowState: WindowStateBridge
 
 function render(ui: ReactNode) {
   container = document.createElement('div')
@@ -48,29 +49,6 @@ function cleanup() {
   container?.remove()
   root = null
   container = null
-}
-
-function setVisibility(hidden: boolean) {
-  Object.defineProperty(document, 'hidden', { configurable: true, value: hidden })
-  Object.defineProperty(document, 'visibilityState', { configurable: true, value: hidden ? 'hidden' : 'visible' })
-}
-
-function installWindowStateBridge() {
-  windowStateCallback = null
-  Object.defineProperty(window, 'hermesDesktop', {
-    configurable: true,
-    value: {
-      onWindowStateChanged: vi.fn((callback: typeof windowStateCallback) => {
-        windowStateCallback = callback
-
-        return () => {
-          if (windowStateCallback === callback) {
-            windowStateCallback = null
-          }
-        }
-      })
-    }
-  })
 }
 
 function rect(top: number, left: number, width: number, height: number): DOMRect {
@@ -146,9 +124,9 @@ function HiddenPaneHarness({ hidden }: { hidden: boolean }) {
 describe('PersistentTerminal rect tracking', () => {
   beforeEach(() => {
     ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
-    setVisibility(false)
+    setDocumentHidden(false)
     vi.spyOn(document, 'hasFocus').mockReturnValue(true)
-    installWindowStateBridge()
+    windowState = installWindowStateBridge()
     resizeObserverCallback = null
     mutationObserverCallback = null
     mutationObserveCalls = []
@@ -185,7 +163,7 @@ describe('PersistentTerminal rect tracking', () => {
     $terminalTakeover.set(false)
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
-    setVisibility(false)
+    setDocumentHidden(false)
     delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
   })
 
@@ -296,7 +274,7 @@ describe('PersistentTerminal rect tracking', () => {
     expect(raf.request).toHaveBeenCalledTimes(1)
 
     act(() => {
-      windowStateCallback?.({ isMinimized: true, isVisible: false })
+      windowState.emit({ isMinimized: true, isVisible: false })
     })
 
     expect(raf.cancel).toHaveBeenCalledTimes(1)
@@ -309,7 +287,7 @@ describe('PersistentTerminal rect tracking', () => {
     expect(raf.request).toHaveBeenCalledTimes(1)
 
     act(() => {
-      windowStateCallback?.({ isMinimized: false, isVisible: true })
+      windowState.emit({ isMinimized: false, isVisible: true })
     })
 
     expect(raf.request).toHaveBeenCalledTimes(2)

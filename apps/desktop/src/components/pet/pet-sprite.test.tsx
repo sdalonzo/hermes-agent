@@ -19,6 +19,8 @@ vi.mock('@/store/pet', () => {
   }
 })
 
+import { installWindowStateBridge, setDocumentHidden, type WindowStateBridge } from '../../test/window-state'
+
 import { PetSprite } from './pet-sprite'
 
 const INFO = {
@@ -34,7 +36,7 @@ const INFO = {
 
 let root: Root | null = null
 let container: HTMLDivElement | null = null
-let windowStateCallback: ((payload: { isMinimized?: boolean; isVisible?: boolean }) => void) | null = null
+let windowState: WindowStateBridge
 let drawImage: ReturnType<typeof vi.fn>
 
 function render(ui: ReactNode) {
@@ -57,29 +59,6 @@ function cleanup() {
   container?.remove()
   root = null
   container = null
-}
-
-function setVisibility(hidden: boolean) {
-  Object.defineProperty(document, 'hidden', { configurable: true, value: hidden })
-  Object.defineProperty(document, 'visibilityState', { configurable: true, value: hidden ? 'hidden' : 'visible' })
-}
-
-function installWindowStateBridge() {
-  windowStateCallback = null
-  Object.defineProperty(window, 'hermesDesktop', {
-    configurable: true,
-    value: {
-      onWindowStateChanged: vi.fn((callback: typeof windowStateCallback) => {
-        windowStateCallback = callback
-
-        return () => {
-          if (windowStateCallback === callback) {
-            windowStateCallback = null
-          }
-        }
-      })
-    }
-  })
 }
 
 function installRaf() {
@@ -122,10 +101,10 @@ describe('PetSprite RAF scheduling', () => {
   beforeEach(() => {
     ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
     vi.useFakeTimers()
-    setVisibility(false)
+    setDocumentHidden(false)
     Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: 1 })
     vi.spyOn(document, 'hasFocus').mockReturnValue(true)
-    installWindowStateBridge()
+    windowState = installWindowStateBridge()
     vi.stubGlobal(
       'Image',
       class extends EventTarget {
@@ -147,7 +126,7 @@ describe('PetSprite RAF scheduling', () => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
-    setVisibility(false)
+    setDocumentHidden(false)
     delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
   })
 
@@ -202,14 +181,14 @@ describe('PetSprite RAF scheduling', () => {
     expect(raf.request).toHaveBeenCalledTimes(1)
 
     act(() => {
-      windowStateCallback?.({ isMinimized: true, isVisible: false })
+      windowState.emit({ isMinimized: true, isVisible: false })
     })
 
     expect(raf.cancel).toHaveBeenCalledTimes(1)
     expect(raf.pending()).toBe(0)
 
     act(() => {
-      windowStateCallback?.({ isMinimized: false, isVisible: true })
+      windowState.emit({ isMinimized: false, isVisible: true })
     })
 
     expect(raf.request).toHaveBeenCalledTimes(2)
