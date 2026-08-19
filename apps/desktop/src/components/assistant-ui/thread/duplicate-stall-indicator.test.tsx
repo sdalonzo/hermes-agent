@@ -11,6 +11,8 @@ import { __resetElapsedTimerRegistryForTests } from '@/components/chat/activity-
 import { setSessionCompacting } from '@/store/compaction'
 import { $activeSessionId, $turnStartedAt } from '@/store/session'
 
+import { stubThreadViewportSize } from '../test-utils'
+
 import { Thread } from '.'
 
 // Layout/observer stubs mirrored from streaming.test.tsx. jsdom has no
@@ -38,23 +40,7 @@ Element.prototype.animate = function animate() {
   } as unknown as Animation
 }
 
-function stubOffsetDimension(
-  prop: 'offsetHeight' | 'offsetWidth',
-  clientProp: 'clientHeight' | 'clientWidth',
-  fallback: number
-) {
-  const previous = Object.getOwnPropertyDescriptor(HTMLElement.prototype, prop)
-
-  Object.defineProperty(HTMLElement.prototype, prop, {
-    configurable: true,
-    get() {
-      return previous?.get?.call(this) || (this as HTMLElement)[clientProp] || fallback
-    }
-  })
-}
-
-stubOffsetDimension('offsetWidth', 'clientWidth', 800)
-stubOffsetDimension('offsetHeight', 'clientHeight', 600)
+stubThreadViewportSize()
 
 const createdAt = new Date('2026-05-01T00:00:00.000Z')
 const sessionId = 'session-68634'

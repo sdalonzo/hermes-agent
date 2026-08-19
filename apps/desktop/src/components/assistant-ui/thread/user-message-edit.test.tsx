@@ -13,9 +13,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { useIncrementalExternalStoreRuntime } from '@/lib/incremental-external-store-runtime'
 
-import { Thread } from '.'
+import { assistantMessage, stubThreadViewportSize, userMessage } from '../test-utils'
 
-const createdAt = new Date('2026-05-01T00:00:00.000Z')
+import { Thread } from '.'
 
 class TestResizeObserver {
   observe() {}
@@ -36,23 +36,7 @@ afterEach(() => {
   cleanup()
 })
 
-function stubOffsetDimension(
-  prop: 'offsetHeight' | 'offsetWidth',
-  clientProp: 'clientHeight' | 'clientWidth',
-  fallback: number
-) {
-  const previous = Object.getOwnPropertyDescriptor(HTMLElement.prototype, prop)
-
-  Object.defineProperty(HTMLElement.prototype, prop, {
-    configurable: true,
-    get() {
-      return previous?.get?.call(this) || (this as HTMLElement)[clientProp] || fallback
-    }
-  })
-}
-
-stubOffsetDimension('offsetWidth', 'clientWidth', 800)
-stubOffsetDimension('offsetHeight', 'clientHeight', 600)
+stubThreadViewportSize()
 
 async function moveFocusOutside(editor: HTMLElement) {
   const outside = window.document.createElement('button')
@@ -65,34 +49,6 @@ async function moveFocusOutside(editor: HTMLElement) {
   })
 
   outside.remove()
-}
-
-function userMessage(): ThreadMessage {
-  return {
-    id: 'user-1',
-    role: 'user',
-    content: [{ type: 'text', text: 'edit me please' }],
-    attachments: [],
-    createdAt,
-    metadata: { custom: {} }
-  } as ThreadMessage
-}
-
-function assistantMessage(): ThreadMessage {
-  return {
-    id: 'assistant-1',
-    role: 'assistant',
-    content: [{ type: 'text', text: 'done' }],
-    status: { type: 'complete', reason: 'stop' },
-    createdAt,
-    metadata: {
-      unstable_state: null,
-      unstable_annotations: [],
-      unstable_data: [],
-      steps: [],
-      custom: {}
-    }
-  } as ThreadMessage
 }
 
 // Mirrors chat/index.tsx: incremental runtime + messageRepository + onEdit.

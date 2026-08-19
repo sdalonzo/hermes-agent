@@ -8,11 +8,11 @@ import type * as ReactionsStore from '@/store/reactions'
 import { $reactionsEnabled } from '@/store/reactions-enabled'
 import { $localReactions } from '@/store/reactions-local'
 
+import { assistantMessage } from '../test-utils'
+
 import { isTapbackDoubleClick } from './use-message-reactions'
 
 import { Thread } from '.'
-
-const createdAt = new Date('2026-05-01T00:00:00.000Z')
 
 class TestResizeObserver {
   observe() {}
@@ -34,17 +34,6 @@ vi.mock('@/store/reactions', async importOriginal => ({
   ...(await importOriginal<typeof ReactionsStore>()),
   toggleMessageReaction: vi.fn(async () => {})
 }))
-
-function assistantMessage(): ThreadMessage {
-  return {
-    id: 'assistant-1',
-    role: 'assistant',
-    content: [{ type: 'text', text: 'done' }],
-    status: { type: 'complete', reason: 'stop' },
-    createdAt,
-    metadata: { unstable_state: null, unstable_annotations: [], unstable_data: [], steps: [], custom: {} }
-  } as ThreadMessage
-}
 
 function Harness() {
   const runtime = useExternalStoreRuntime<ThreadMessage>({

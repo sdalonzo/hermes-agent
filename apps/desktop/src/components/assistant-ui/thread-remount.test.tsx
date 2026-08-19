@@ -2,6 +2,7 @@ import { AssistantRuntimeProvider, type ThreadMessage, useExternalStoreRuntime }
 import { act, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
+import { createdAt, stubThreadViewportSize } from './test-utils'
 import { Thread } from './thread'
 
 class NoopResizeObserver {
@@ -30,25 +31,8 @@ Element.prototype.animate = function animate() {
 // jsdom returns 0 for offset*; the virtualizer reads those to size its
 // viewport. Fall through to client* or a sane default so virtualized
 // items render (same stub as streaming.test.tsx).
-function stubOffsetDimension(
-  prop: 'offsetHeight' | 'offsetWidth',
-  clientProp: 'clientHeight' | 'clientWidth',
-  fallback: number
-) {
-  const previous = Object.getOwnPropertyDescriptor(HTMLElement.prototype, prop)
 
-  Object.defineProperty(HTMLElement.prototype, prop, {
-    configurable: true,
-    get() {
-      return previous?.get?.call(this) || (this as HTMLElement)[clientProp] || fallback
-    }
-  })
-}
-
-stubOffsetDimension('offsetWidth', 'clientWidth', 800)
-stubOffsetDimension('offsetHeight', 'clientHeight', 600)
-
-const createdAt = new Date('2026-05-01T00:00:00.000Z')
+stubThreadViewportSize()
 
 const MESSAGES: ThreadMessage[] = [
   {

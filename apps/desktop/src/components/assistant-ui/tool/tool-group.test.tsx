@@ -8,6 +8,7 @@ import { $activeSessionId } from '@/store/session'
 import { clearDismissedToolRows } from '@/store/tool-dismiss'
 import { $toolDisclosureStates } from '@/store/tool-view'
 
+import { stubThreadViewportSize } from '../test-utils'
 import { Thread } from '../thread'
 import { formatTimelineRange } from '../thread/timestamp'
 
@@ -58,23 +59,7 @@ Element.prototype.animate = function animate() {
   } as unknown as Animation
 }
 
-function stubOffsetDimension(
-  prop: 'offsetHeight' | 'offsetWidth',
-  clientProp: 'clientHeight' | 'clientWidth',
-  fallback: number
-) {
-  const previous = Object.getOwnPropertyDescriptor(HTMLElement.prototype, prop)
-
-  Object.defineProperty(HTMLElement.prototype, prop, {
-    configurable: true,
-    get() {
-      return previous?.get?.call(this) || (this as HTMLElement)[clientProp] || fallback
-    }
-  })
-}
-
-stubOffsetDimension('offsetWidth', 'clientWidth', 800)
-stubOffsetDimension('offsetHeight', 'clientHeight', 600)
+stubThreadViewportSize()
 
 // A running assistant message with two tools: a completed read_file plus a
 // pending terminal (no result), rendered as a flat two-row list.
