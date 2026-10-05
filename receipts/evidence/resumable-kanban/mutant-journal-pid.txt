@@ -1,0 +1,69 @@
+$ scripts/run_tests.sh --file-retries 0 tests/hermes_cli/test_kanban_worker_resume.py -k different_scope_process --tb=short
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~6 tests) under ['tests/hermes_cli/test_kanban_worker_resume.py']; running with -j 16
+[100.0% |     6/~6 | ✓0 | ✗1] ✗ tests/hermes_cli/test_kanban_worker_resume.py (1✗, 0.7s)
+
+  ╔╍ Failed: tests/hermes_cli/test_kanban_worker_resume.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║ ============================= test session starts ==============================
+  ║ platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+  ║ rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+  ║ configfile: pyproject.toml
+  ║ plugins: asyncio-1.3.0, anyio-4.14.2
+  ║ asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+  ║ collected 13 items / 12 deselected / 1 selected
+  ║ 
+  ║ tests/hermes_cli/test_kanban_worker_resume.py F                          [100%]
+  ║ 
+  ║ =================================== FAILURES ===================================
+  ║ _____ test_journal_signal_to_a_different_scope_process_is_not_worker_death _____
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:81: in test_journal_signal_to_a_different_scope_process_is_not_worker_death
+  ║     assert journal_death("t_journal", 1, 100, 88888) is None
+  ║ E   AssertionError: assert {'scope': 'hermes-worker-kanban-t_journal-run-1.scope', 'reason': 'SIGTERM', 'journal_evidence': 'scope: Sending signal SIGTERM to process 99999 on client request.'} is None
+  ║ E    +  where {'scope': 'hermes-worker-kanban-t_journal-run-1.scope', 'reason': 'SIGTERM', 'journal_evidence': 'scope: Sending signal SIGTERM to process 99999 on client request.'} = <function journal_death at 0x7fd03f18cbf0>('t_journal', 1, 100, 88888)
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_journal_signal_to_a_different_scope_process_is_not_worker_death
+  ║ ======================= 1 failed, 12 deselected in 0.31s =======================
+  ║
+  ║  Repro: python -m pytest tests/hermes_cli/test_kanban_worker_resume.py -k different_scope_process --tb=short
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 0 tests passed, 1 failed (100% complete) in 0.7s (16 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 0.7s  (runner wall: 0.7s, parallelism: 16x)
+  P50: 0.67s  P90: 0.67s  P95: 0.67s  P99: 0.67s  Max: 0.67s
+  <1s: 1 files (100%)  <2s: 1 files (100%)
+  Top 10 slowest:
+      0.67s  tests/hermes_cli/test_kanban_worker_resume.py
+
+=== Failure output ===
+
+--- tests/hermes_cli/test_kanban_worker_resume.py ---
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.14.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 13 items / 12 deselected / 1 selected
+
+tests/hermes_cli/test_kanban_worker_resume.py F                          [100%]
+
+=================================== FAILURES ===================================
+_____ test_journal_signal_to_a_different_scope_process_is_not_worker_death _____
+tests/hermes_cli/test_kanban_worker_resume.py:81: in test_journal_signal_to_a_different_scope_process_is_not_worker_death
+    assert journal_death("t_journal", 1, 100, 88888) is None
+E   AssertionError: assert {'scope': 'hermes-worker-kanban-t_journal-run-1.scope', 'reason': 'SIGTERM', 'journal_evidence': 'scope: Sending signal SIGTERM to process 99999 on client request.'} is None
+E    +  where {'scope': 'hermes-worker-kanban-t_journal-run-1.scope', 'reason': 'SIGTERM', 'journal_evidence': 'scope: Sending signal SIGTERM to process 99999 on client request.'} = <function journal_death at 0x7fd03f18cbf0>('t_journal', 1, 100, 88888)
+=========================== short test summary info ============================
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_journal_signal_to_a_different_scope_process_is_not_worker_death
+======================= 1 failed, 12 deselected in 0.31s =======================
+
+=== 1 file with test failures (1 test failed) ===
+  tests/hermes_cli/test_kanban_worker_resume.py  (1 test failed)
+# exit: 1

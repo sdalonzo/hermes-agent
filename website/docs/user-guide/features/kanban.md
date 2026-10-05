@@ -606,7 +606,8 @@ unknown (`pid <n> not alive`).
 **Crash continuation:** A worker records `worker_session_id` on its run
 before its first provider call. A retry after a crash, timeout, reclaim or
 quota wall resumes that profile-local session in the same workspace.
-`resumed_from_run_id` links the new attempt to its predecessor. The creator's
+`resumed_from_run_id` links the new attempt to the last durable worker.
+Claims reclaimed before worker startup do not erase that continuation. The creator's
 `tasks.session_id` is never a worker continuation key. Changed profile, home,
 workspace, branch, step, model/provider pins, skills or goal mode refuse
 resume. A missing or empty saved transcript fails before inference rather

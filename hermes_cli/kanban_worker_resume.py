@@ -96,6 +96,20 @@ def _context(task, workspace, home):
             "skills": task.skills or [], "goal_mode": task.goal_mode}
 
 
+def _prior_worker_run(conn, task):
+    """A claim reclaimed before startup must not erase the preceding worker."""
+    for run in conn.execute("SELECT id, profile, step_key, outcome, worker_session_id, worker_context "
+                            "FROM task_runs WHERE task_id = ? AND id < ? ORDER BY id DESC",
+                            (task.id, task.current_run_id)):
+        if run["outcome"] not in _RETRY_OUTCOMES:
+            return None
+        if run["profile"] != task.assignee or run["step_key"] != task.current_step_key:
+            raise ValueError(f"task {task.id}: retry context changed; refusing worker session resume")
+        if run["worker_session_id"]:
+            return run
+    return None
+
+
 def prepare_resume(task, workspace, home, *, board=None):
     """Bind spawn coordinates and return a safe retry's session, never the creator's session."""
     from hermes_cli import kanban_db as kb
@@ -105,14 +119,13 @@ def prepare_resume(task, workspace, home, *, board=None):
         return None
     context = _context(task, workspace, home)
     with connect_closing(board=board) as conn, kb.write_txn(conn):
-        current = conn.execute("SELECT * FROM task_runs WHERE id = ? AND task_id = ? AND ended_at IS NULL",
+        current = conn.execute("SELECT id FROM task_runs WHERE id = ? AND task_id = ? AND ended_at IS NULL",
                                (task.current_run_id, task.id)).fetchone()
         if current is None:
             return None
-        previous = conn.execute("SELECT * FROM task_runs WHERE task_id = ? AND id < ? "
-                                "ORDER BY id DESC LIMIT 1", (task.id, task.current_run_id)).fetchone()
+        previous = _prior_worker_run(conn, task)
         session_id = resumed_from = None
-        if previous and previous["outcome"] in _RETRY_OUTCOMES and previous["worker_session_id"]:
+        if previous:
             if json.loads(previous["worker_context"] or "null") != context:
                 raise ValueError(f"task {task.id}: retry context changed; refusing worker session resume")
             session_id, resumed_from = previous["worker_session_id"], previous["id"]
@@ -154,12 +167,12 @@ def observed_scope_death(task_id, *, board=None):
     from hermes_cli.kanban_db_connect import connect_closing
 
     with connect_closing(board=board) as conn:
-        run = conn.execute("SELECT r.id, r.started_at FROM task_runs r JOIN tasks t "
+        run = conn.execute("SELECT r.id, r.started_at, r.worker_pid FROM task_runs r JOIN tasks t "
                            "ON t.current_run_id = r.id WHERE t.id = ?", (task_id,)).fetchone()
-    return journal_death(task_id, run["id"], run["started_at"]) if run else None
+    return journal_death(task_id, run["id"], run["started_at"], run["worker_pid"]) if run else None
 
 
-def journal_death(task_id, run_id, started_at):
+def journal_death(task_id, run_id, started_at, worker_pid):
     """Read only this run's scope. Missing journal evidence remains unknown."""
     from tools.process_registry import _IS_LINUX, systemd_user_bus_env
 
@@ -178,7 +191,9 @@ def journal_death(task_id, run_id, started_at):
     for line in result.stdout.splitlines():
         if "oom-kill" in line or "OOM killer" in line:
             return {"scope": scope, "reason": "oom-kill", "journal_evidence": line}
-        match = re.search(r"(?:Killed unit cgroup with|Sending signal) (SIGKILL|SIGTERM)\b", line)
+        match = re.search(r"Killed unit cgroup with (SIGKILL|SIGTERM)\b", line)
+        if not match and worker_pid:
+            match = re.search(rf"Sending signal (SIGKILL|SIGTERM) to process {int(worker_pid)}\b", line)
         if match:
             return {"scope": scope, "reason": match[1], "journal_evidence": line}
     return None

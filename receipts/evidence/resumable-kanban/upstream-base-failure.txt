@@ -1,0 +1,34 @@
+$ git fetch origin kernel/resumable-kanban; git switch --detach c53536929e485a2064d915d83593e3b50c86e4fc; env -u __HERMES_ACTIVATED HERMES_PYTHON=/home/hermes/.hermes/installs/a7b17937abe88bbf/test-environment/gen-ae56673fe14c4cdd82a6cac56d8e70ba/venv/bin/python scripts/run_tests.sh tests/agent/test_inline_edit_persistence.py -j 2 --tb=short --file-retries 0
+HEAD is now at c53536929e test(discord): annotate the turn prompt parity test; keep adapter.py within its cap
+=== Summary: 1 files, 1 tests passed, 10 failed (100% complete) in 6.1s (2 workers) ===
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+E   AssertionError: TEST BUG: file I/O against the REAL hermes home: /home/hermes/AGENTS.md
+E   Use the isolated HERMES_HOME or a temporary fixture instead.
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[create-sequential]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[create-concurrent]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[replace-sequential]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[replace-concurrent]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[patch-sequential]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[patch-concurrent]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[noop-sequential]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[noop-concurrent]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[failed-sequential]
+FAILED tests/agent/test_inline_edit_persistence.py::test_edit_preview_is_durable_before_emission_and_display_only[failed-concurrent]
+# exit: 1

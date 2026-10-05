@@ -84,12 +84,17 @@ def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path, kill_sign
             assert second["resumed_from_run_id"] == first["id"], second
             assert board.task(tid)["workspace_path"] == workspace
             assert MARK in json.dumps(requests[2]), requests[2]
+            old_history = [(m["role"], m.get("content"), m.get("tool_calls"))
+                           for m in requests[1] if m["role"] != "system"]
+            new_history = [(m["role"], m.get("content"), m.get("tool_calls"))
+                           for m in requests[2] if m["role"] != "system"]
+            assert new_history[:len(old_history)] == old_history
             killed = board.runs(tid)[0]
             assert "killed" in killed["error"].lower(), killed
             assert not json.loads(killed.get("metadata") or "{}").get("protocol_violation"), killed
             print(json.dumps({"session_id": second["worker_session_id"],
                               "resumed_from_run_id": second["resumed_from_run_id"],
                               "workspace": workspace, "death": killed["error"],
-                              "prefix_present": True}, sort_keys=True))
+                              "prefix_present": True, "prefix_messages": len(old_history)}, sort_keys=True))
         finally:
             board.kill_workers()

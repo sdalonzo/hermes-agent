@@ -1,0 +1,73 @@
+$ scripts/run_tests.sh --file-retries 0 tests/hermes_cli/test_kanban_worker_resume.py -k reclaimed_claim --tb=short
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~6 tests) under ['tests/hermes_cli/test_kanban_worker_resume.py']; running with -j 16
+[100.0% |     6/~6 | ✓0 | ✗1] ✗ tests/hermes_cli/test_kanban_worker_resume.py (1✗, 1.2s)
+
+  ╔╍ Failed: tests/hermes_cli/test_kanban_worker_resume.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║ ============================= test session starts ==============================
+  ║ platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+  ║ rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+  ║ configfile: pyproject.toml
+  ║ plugins: asyncio-1.3.0, anyio-4.14.2
+  ║ asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+  ║ collected 13 items / 12 deselected / 1 selected
+  ║ 
+  ║ tests/hermes_cli/test_kanban_worker_resume.py F                          [100%]
+  ║ 
+  ║ =================================== FAILURES ===================================
+  ║ _______ test_reclaimed_claim_without_a_worker_keeps_last_durable_session _______
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:59: in test_reclaimed_claim_without_a_worker_keeps_last_durable_session
+  ║     assert prepare_resume(replacement, str(workspace), str(home)) == "durable-session"
+  ║            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ hermes_cli/kanban_worker_resume.py:129: in prepare_resume
+  ║     raise ValueError(f"task {task.id}: retry context changed; refusing worker session resume")
+  ║ E   ValueError: task t_eeeac5c9: retry context changed; refusing worker session resume
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_reclaimed_claim_without_a_worker_keeps_last_durable_session
+  ║ ======================= 1 failed, 12 deselected in 0.72s =======================
+  ║
+  ║  Repro: python -m pytest tests/hermes_cli/test_kanban_worker_resume.py -k reclaimed_claim --tb=short
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 0 tests passed, 1 failed (100% complete) in 1.2s (16 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 1.2s  (runner wall: 1.2s, parallelism: 16x)
+  P50: 1.16s  P90: 1.16s  P95: 1.16s  P99: 1.16s  Max: 1.16s
+  <1s: 0 files (0%)  <2s: 1 files (100%)
+  Top 10 slowest:
+      1.16s  tests/hermes_cli/test_kanban_worker_resume.py
+
+=== Failure output ===
+
+--- tests/hermes_cli/test_kanban_worker_resume.py ---
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.14.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 13 items / 12 deselected / 1 selected
+
+tests/hermes_cli/test_kanban_worker_resume.py F                          [100%]
+
+=================================== FAILURES ===================================
+_______ test_reclaimed_claim_without_a_worker_keeps_last_durable_session _______
+tests/hermes_cli/test_kanban_worker_resume.py:59: in test_reclaimed_claim_without_a_worker_keeps_last_durable_session
+    assert prepare_resume(replacement, str(workspace), str(home)) == "durable-session"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+hermes_cli/kanban_worker_resume.py:129: in prepare_resume
+    raise ValueError(f"task {task.id}: retry context changed; refusing worker session resume")
+E   ValueError: task t_eeeac5c9: retry context changed; refusing worker session resume
+=========================== short test summary info ============================
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_reclaimed_claim_without_a_worker_keeps_last_durable_session
+======================= 1 failed, 12 deselected in 0.72s =======================
+
+=== 1 file with test failures (1 test failed) ===
+  tests/hermes_cli/test_kanban_worker_resume.py  (1 test failed)
+# exit: 1

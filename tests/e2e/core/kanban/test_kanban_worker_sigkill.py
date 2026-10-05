@@ -73,8 +73,6 @@ class Director:
     def __call__(self, rec: dict):
         msgs = rec["body"]["messages"]
         with self._lock:
-            if not any(m.get("role") in ("assistant", "tool") for m in msgs):
-                self.attempt += 1
             n = self.attempt
             self.billed[n] = self.billed.get(n, 0) + 1
         last = msgs[-1].get("role")
@@ -103,9 +101,11 @@ class Scenario:
 
 def _drive(board: Board, director: Director) -> Scenario:
     tid = board.create("sigkill chaos card")
+    director.attempt = 1
     board.dispatch(*TICK)
     w1 = board.task(tid)["worker_pid"]
     board.wait_worker_exit(tid, w1)
+    director.attempt = 2
     board.dispatch(*TICK)  # reaps attempt 1 (protocol violation), spawns attempt 2
     w2 = int(board.task(tid)["worker_pid"])
     assert w2 != w1, board.diag(tid)
@@ -123,6 +123,7 @@ def _drive(board: Board, director: Director) -> Scenario:
     sc.after_claim = board.task(tid)
     sc.claim_run = board.runs(tid)[-1]
     wait_until(lambda: int(time.time()) > int(sc.after_claim["claim_expires"]), 5, "operator claim to expire")
+    director.attempt = 3
     board.dispatch(*TICK)  # reclaims the expired claim, spawns attempt 3
     w3 = board.task(tid)["worker_pid"]
     assert w3, board.diag(tid)

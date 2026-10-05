@@ -49,6 +49,20 @@ def test_resume_refuses_changed_execution_context(retry, change):
         prepare_resume(task, str(workspace), str(home))
 
 
+def test_reclaimed_claim_without_a_worker_keeps_last_durable_session(retry):
+    task, workspace, home = retry
+    with connect_closing() as conn, kb.write_txn(conn):
+        kb._end_run(conn, task.id, outcome="reclaimed")
+        conn.execute("UPDATE tasks SET status = 'ready', claim_lock = NULL, claim_expires = NULL WHERE id = ?", (task.id,))
+    with connect_closing() as conn:
+        replacement = kb.claim_task(conn, task.id)
+    assert prepare_resume(replacement, str(workspace), str(home)) == "durable-session"
+    with connect_closing() as conn:
+        run = conn.execute("SELECT resumed_from_run_id FROM task_runs WHERE id = ?",
+                           (replacement.current_run_id,)).fetchone()
+        assert run["resumed_from_run_id"] < task.current_run_id
+
+
 @pytest.mark.parametrize("store", [None, object()])
 def test_resume_cannot_enter_inference_with_missing_transcript(store):
     from types import SimpleNamespace
@@ -56,6 +70,16 @@ def test_resume_cannot_enter_inference_with_missing_transcript(store):
     cli = SimpleNamespace(_session_db=store, _resumed=True, conversation_history=[], session_id="missing-history")
     with pytest.raises(RuntimeError, match="refusing a fresh conversation"):
         bind_cli_worker_session(cli)
+
+
+@pytest.mark.platforms("linux")
+def test_journal_signal_to_a_different_scope_process_is_not_worker_death(monkeypatch):
+    import subprocess
+    from hermes_cli.kanban_worker_resume import journal_death
+    monkeypatch.setattr(subprocess, "run", lambda *a, **kw: subprocess.CompletedProcess(
+        a[0], 0, "scope: Sending signal SIGTERM to process 99999 on client request."))
+    assert journal_death("t_journal", 1, 100, 88888) is None
+    assert journal_death("t_journal", 1, 100, 99999)["reason"] == "SIGTERM"
 
 
 def test_exit_trailer_cannot_cross_an_invocation_boundary(tmp_path, monkeypatch):
@@ -69,6 +93,16 @@ def test_exit_trailer_cannot_cross_an_invocation_boundary(tmp_path, monkeypatch)
     with path.open("a") as log:
         log.write("[kanban-worker-exit] rc=75\n")
     assert _worker_log_exit_code("t_boundary") == 75
+
+
+def test_show_exposes_the_durable_resume_lineage(retry):
+    import json
+    from tools.kanban_tools import _handle_show
+    task, workspace, home = retry
+    prepare_resume(task, str(workspace), str(home))
+    run = json.loads(_handle_show({"task_id": task.id}))["runs"][-1]
+    assert run["worker_session_id"] == "durable-session"
+    assert run["resumed_from_run_id"] < task.current_run_id
 
 
 def test_stale_worker_cannot_bind_session_to_replacement_run(retry):

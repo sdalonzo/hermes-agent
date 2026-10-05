@@ -267,8 +267,9 @@ def _worker_log_exit_code(task_id: str, board: Optional[str] = None) -> Optional
 
     The durable twin of ``_recent_worker_exits``: written by the worker itself
     (``hermes_cli.quiet_single_query.exit_single_query``), so it is there whether
-    or not the process running this sweep ever reaped the worker. Last trailer
-    wins — the log is append-mode across re-runs.
+    or not the process running this sweep ever reaped the worker. Only trailers
+    after the latest invocation header are eligible; legacy logs retain their
+    previous last-trailer behavior.
     """
     try:
         raw = _kb.read_worker_log(task_id, tail_bytes=4000, board=board)
