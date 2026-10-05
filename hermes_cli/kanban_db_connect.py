@@ -852,6 +852,9 @@ _NOTIFY_SUB_COLUMNS = (
 )
 
 _TASK_RUN_COLUMNS = (
+    ("worker_session_id", "worker_session_id TEXT"),
+    ("worker_context", "worker_context TEXT"),
+    ("resumed_from_run_id", "resumed_from_run_id INTEGER"),
     # Spawn-time start fingerprint of the run's worker_pid (PID-reuse guard for the
     # terminal-worker reaper; NULL = legacy row, never signalled).
     ("worker_started_at", "worker_started_at INTEGER"),

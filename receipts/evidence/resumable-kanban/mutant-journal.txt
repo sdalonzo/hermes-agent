@@ -1,0 +1,73 @@
+$ scripts/run_tests.sh --file-retries 0 tests/e2e/core/kanban/test_kanban_worker_resume.py --tb=short
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~1 tests) under ['tests/e2e/core/kanban/test_kanban_worker_resume.py']; running with -j 16
+[100.0% |     1/~1 | ✓0 | ✗1] ✗ tests/e2e/core/kanban/test_kanban_worker_resume.py (1✗, 7.7s)
+
+  ╔╍ Failed: tests/e2e/core/kanban/test_kanban_worker_resume.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║ ============================= test session starts ==============================
+  ║ platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+  ║ rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+  ║ configfile: pyproject.toml
+  ║ plugins: asyncio-1.3.0, anyio-4.14.2
+  ║ asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+  ║ collected 1 item
+  ║ 
+  ║ tests/e2e/core/kanban/test_kanban_worker_resume.py F                     [100%]
+  ║ 
+  ║ =================================== FAILURES ===================================
+  ║ ___________ test_sigkilled_scope_resumes_exact_session_and_workspace ___________
+  ║ tests/e2e/core/kanban/test_kanban_worker_resume.py:84: in test_sigkilled_scope_resumes_exact_session_and_workspace
+  ║     assert "killed" in killed["error"].lower(), killed
+  ║ E   AssertionError: {'id': 1, 'task_id': 't_ed1538e7', 'profile': 'default', 'step_key': None, ...}
+  ║ E   assert 'killed' in "pid 3998228 not alive worker's last output: 'durable_resume_prefix_77881 ┊ 💓 preparing kanban_heartbeat… ┊ ⚡ kanban_he   0.0s'"
+  ║ E    +  where "pid 3998228 not alive worker's last output: 'durable_resume_prefix_77881 ┊ 💓 preparing kanban_heartbeat… ┊ ⚡ kanban_he   0.0s'" = <built-in method lower of str object at 0x2f70e060>()
+  ║ E    +    where <built-in method lower of str object at 0x2f70e060> = "pid 3998228 not alive Worker's last output: 'DURABLE_RESUME_PREFIX_77881 ┊ 💓 preparing kanban_heartbeat… ┊ ⚡ kanban_he   0.0s'".lower
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/e2e/core/kanban/test_kanban_worker_resume.py::test_sigkilled_scope_resumes_exact_session_and_workspace
+  ║ ============================== 1 failed in 6.96s ===============================
+  ║
+  ║  Repro: python -m pytest tests/e2e/core/kanban/test_kanban_worker_resume.py --tb=short
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 0 tests passed, 1 failed (100% complete) in 7.8s (16 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 7.7s  (runner wall: 7.8s, parallelism: 16x)
+  P50: 7.75s  P90: 7.75s  P95: 7.75s  P99: 7.75s  Max: 7.75s
+  <1s: 0 files (0%)  <2s: 0 files (0%)
+  Top 10 slowest:
+      7.75s  tests/e2e/core/kanban/test_kanban_worker_resume.py
+
+=== Failure output ===
+
+--- tests/e2e/core/kanban/test_kanban_worker_resume.py ---
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.14.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/e2e/core/kanban/test_kanban_worker_resume.py F                     [100%]
+
+=================================== FAILURES ===================================
+___________ test_sigkilled_scope_resumes_exact_session_and_workspace ___________
+tests/e2e/core/kanban/test_kanban_worker_resume.py:84: in test_sigkilled_scope_resumes_exact_session_and_workspace
+    assert "killed" in killed["error"].lower(), killed
+E   AssertionError: {'id': 1, 'task_id': 't_ed1538e7', 'profile': 'default', 'step_key': None, ...}
+E   assert 'killed' in "pid 3998228 not alive worker's last output: 'durable_resume_prefix_77881 ┊ 💓 preparing kanban_heartbeat… ┊ ⚡ kanban_he   0.0s'"
+E    +  where "pid 3998228 not alive worker's last output: 'durable_resume_prefix_77881 ┊ 💓 preparing kanban_heartbeat… ┊ ⚡ kanban_he   0.0s'" = <built-in method lower of str object at 0x2f70e060>()
+E    +    where <built-in method lower of str object at 0x2f70e060> = "pid 3998228 not alive Worker's last output: 'DURABLE_RESUME_PREFIX_77881 ┊ 💓 preparing kanban_heartbeat… ┊ ⚡ kanban_he   0.0s'".lower
+=========================== short test summary info ============================
+FAILED tests/e2e/core/kanban/test_kanban_worker_resume.py::test_sigkilled_scope_resumes_exact_session_and_workspace
+============================== 1 failed in 6.96s ===============================
+
+=== 1 file with test failures (1 test failed) ===
+  tests/e2e/core/kanban/test_kanban_worker_resume.py  (1 test failed)
+# exit: 1

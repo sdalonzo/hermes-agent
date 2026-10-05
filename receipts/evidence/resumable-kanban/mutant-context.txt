@@ -1,0 +1,116 @@
+$ scripts/run_tests.sh --file-retries 0 tests/hermes_cli/test_kanban_worker_resume.py -k changed --tb=short
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~2 tests) under ['tests/hermes_cli/test_kanban_worker_resume.py']; running with -j 16
+[100.0% |     2/~2 | ✓0 | ✗7] ✗ tests/hermes_cli/test_kanban_worker_resume.py (7✗, 2.9s)
+
+  ╔╍ Failed: tests/hermes_cli/test_kanban_worker_resume.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║ E   Failed: DID NOT RAISE ValueError
+  ║ _____________ test_resume_refuses_changed_execution_context[step] ______________
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+  ║     with pytest.raises(ValueError, match="retry context changed"):
+  ║          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ E   Failed: DID NOT RAISE ValueError
+  ║ ____________ test_resume_refuses_changed_execution_context[branch] _____________
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+  ║     with pytest.raises(ValueError, match="retry context changed"):
+  ║          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ E   Failed: DID NOT RAISE ValueError
+  ║ ___________ test_resume_refuses_changed_execution_context[workspace] ___________
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+  ║     with pytest.raises(ValueError, match="retry context changed"):
+  ║          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ E   Failed: DID NOT RAISE ValueError
+  ║ _____________ test_resume_refuses_changed_execution_context[home] ______________
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+  ║     with pytest.raises(ValueError, match="retry context changed"):
+  ║          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ E   Failed: DID NOT RAISE ValueError
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[profile]
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[model]
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[provider]
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[step]
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[branch]
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[workspace]
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[home]
+  ║ ======================= 7 failed, 1 deselected in 2.43s ========================
+  ║
+  ║  Repro: python -m pytest tests/hermes_cli/test_kanban_worker_resume.py -k changed --tb=short
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 0 tests passed, 7 failed (100% complete) in 2.9s (16 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 2.9s  (runner wall: 2.9s, parallelism: 16x)
+  P50: 2.88s  P90: 2.88s  P95: 2.88s  P99: 2.88s  Max: 2.88s
+  <1s: 0 files (0%)  <2s: 0 files (0%)
+  Top 10 slowest:
+      2.88s  tests/hermes_cli/test_kanban_worker_resume.py
+
+=== Failure output ===
+
+--- tests/hermes_cli/test_kanban_worker_resume.py ---
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.14.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 8 items / 1 deselected / 7 selected
+
+tests/hermes_cli/test_kanban_worker_resume.py FFFFFFF                    [100%]
+
+=================================== FAILURES ===================================
+____________ test_resume_refuses_changed_execution_context[profile] ____________
+tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+    with pytest.raises(ValueError, match="retry context changed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValueError
+_____________ test_resume_refuses_changed_execution_context[model] _____________
+tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+    with pytest.raises(ValueError, match="retry context changed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValueError
+___________ test_resume_refuses_changed_execution_context[provider] ____________
+tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+    with pytest.raises(ValueError, match="retry context changed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValueError
+_____________ test_resume_refuses_changed_execution_context[step] ______________
+tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+    with pytest.raises(ValueError, match="retry context changed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValueError
+____________ test_resume_refuses_changed_execution_context[branch] _____________
+tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+    with pytest.raises(ValueError, match="retry context changed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValueError
+___________ test_resume_refuses_changed_execution_context[workspace] ___________
+tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+    with pytest.raises(ValueError, match="retry context changed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValueError
+_____________ test_resume_refuses_changed_execution_context[home] ______________
+tests/hermes_cli/test_kanban_worker_resume.py:48: in test_resume_refuses_changed_execution_context
+    with pytest.raises(ValueError, match="retry context changed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE ValueError
+=========================== short test summary info ============================
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[profile]
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[model]
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[provider]
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[step]
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[branch]
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[workspace]
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_refuses_changed_execution_context[home]
+======================= 7 failed, 1 deselected in 2.43s ========================
+
+=== 1 file with test failures (7 tests failed) ===
+  tests/hermes_cli/test_kanban_worker_resume.py  (7 tests failed)
+# exit: 1

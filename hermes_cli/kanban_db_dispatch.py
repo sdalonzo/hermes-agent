@@ -1053,80 +1053,14 @@ def _classify_dead_worker(
     in the event payload, appended to the error text) so the board and the retry
     worker see WHY instead of a bare label; a rate-limited requeue does not need it.
     """
-    dead = _classify_dead_worker_exit(pid, claimer, task_id=task_id, board=board)
+    from hermes_cli.kanban_worker_resume import classify_dead_worker_exit
+    dead = classify_dead_worker_exit(pid, claimer, task_id=task_id, board=board)
     if task_id and not dead.rate_limited:
         worker_output = _worker_final_output(task_id, board=board)
         if worker_output:
             dead.error_text += f" Worker's last output: {worker_output!r}"
             dead.event_payload["worker_output"] = worker_output
     return dead
-
-
-def _classify_dead_worker_exit(
-    pid: int,
-    claimer: Optional[str],
-    *,
-    task_id: Optional[str] = None,
-    board: Optional[str] = None,
-) -> _DeadWorker:
-    """Exit status -> reclaim bookkeeping, before the worker's own words are folded in.
-
-    The reap registry only knows children of THIS process; a per-tick dispatcher
-    reads the exit trailer the worker left in its log instead, so the same death
-    gets the same booking (protocol violation / rate-limit requeue / crash) as
-    under the gateway-embedded dispatcher. A worker that never reached its exit
-    epilogue (killed, OOM) leaves no trailer and stays a plain crash.
-    """
-    kind, code = _classify_worker_exit(pid)
-    if kind == "unknown" and task_id:
-        logged = _worker_log_exit_code(task_id, board=board)
-        if logged is not None:
-            kind, code = _exit_code_kind(logged)
-    if kind == "clean_exit":
-        # rc=0 while still ``running``: usually the work succeeded and only the
-        # paperwork was skipped; the corrective sentence reaches the retry
-        # worker via ``build_worker_context``.
-        return _DeadWorker(
-            kind, code, _PROTOCOL_VIOLATION_ERROR, "protocol_violation",
-            # ``protocol_violation`` is the durable marker for
-            # _protocol_violation_streak: _end_run copies this payload into the
-            # run metadata.
-            {"pid": pid, "claimer": claimer, "exit_code": code, "protocol_violation": True},
-            protocol_violation=True,
-        )
-    if kind == "rate_limited":
-        # Quota wall — NOT a task failure. Release to the source phase and do
-        # NOT count a failure so a long quota window can't trip the breaker.
-        return _DeadWorker(
-            kind, code,
-            f"pid {pid} exited rate-limited (quota wall) — requeued without counting a failure",
-            "rate_limited",
-            {"pid": pid, "claimer": claimer, "exit_code": code},
-            rate_limited=True,
-        )
-    if kind == "terminal_provider":
-        # The worker classified its own provider failure as unhealable (credential
-        # revoked, model gone): every further spawn would hit the same wall, so
-        # ``_account_crashes`` trips the breaker now instead of after ``failure_limit``.
-        return _DeadWorker(
-            kind, code,
-            f"pid {pid} exited on a terminal provider error (exit {code}): the provider rejected "
-            "this profile's credential or model — fix the configuration, then unblock.",
-            "crashed",
-            {"pid": pid, "claimer": claimer, "exit_kind": kind, "exit_code": code, "terminal_provider": True},
-            terminal_provider=True,
-        )
-    if kind == "nonzero_exit":
-        error_text = f"pid {pid} exited with code {code}"
-    elif kind == "signaled":
-        error_text = f"pid {pid} killed by signal {code}"
-    else:
-        error_text = f"pid {pid} not alive"
-    event_payload = {"pid": pid, "claimer": claimer}
-    if code is not None and kind != "unknown":
-        event_payload["exit_kind"] = kind
-        event_payload["exit_code"] = code
-    return _DeadWorker(kind, code, error_text, "crashed", event_payload)
 
 
 @dataclass
@@ -2937,7 +2871,12 @@ def _default_spawn(task: Task, workspace: str, *, board: Optional[str] = None) -
     # older hermes builds on PATH that predate the flag's precedence.
     env.pop("HERMES_TUI", None)
 
+    from hermes_cli.kanban_worker_resume import prepare_resume
+    from hermes_constants import get_hermes_home
+    resume = prepare_resume(task, workspace, env.get("HERMES_HOME") or str(get_hermes_home()), board=board)
     cmd = _worker_argv(task, profile_arg, env.get("HERMES_HOME"))
+    if resume:
+        cmd.extend(["--resume", resume])
     # The module argv must carry the import context that made it resolvable:
     # the shim's in-process path injection is invisible to the bare child.
     _propagate_module_import_root(cmd, env)

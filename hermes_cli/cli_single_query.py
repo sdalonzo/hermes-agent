@@ -522,6 +522,11 @@ def _run_single_query_mode(cli, query, image, quiet, oneshot, stream_json: bool 
     if not cli._claim_active_session("cli", stderr=bool(quiet)):
         exit_single_query(1)
     try:
+        if os.environ.get("HERMES_KANBAN_TASK"):
+            from hermes_cli.kanban_worker_resume import bind_worker_session
+            if cli._resumed and not cli._preload_resumed_session():
+                raise RuntimeError("cannot restore kanban worker session; refusing a fresh conversation")
+            bind_worker_session(cli.session_id)
         query, single_query_images = _collect_query_images(query, image)
         single_query_image_urls = _collect_kanban_task_images(single_query_images)
         from hermes_cli.observability.shared_metrics_startup import record_cli_one_shot_ready
