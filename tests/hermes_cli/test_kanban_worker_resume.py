@@ -20,6 +20,7 @@ def retry(tmp_path, monkeypatch):
     with connect_closing() as conn:
         tid = kb.create_task(conn, title="resume", assignee="default")
         task = kb.claim_task(conn, tid)
+    monkeypatch.setenv("HERMES_KANBAN_WORKSPACE", str(workspace))
     monkeypatch.setenv("HERMES_KANBAN_TASK", tid)
     monkeypatch.setenv("HERMES_KANBAN_RUN_ID", str(task.current_run_id))
     monkeypatch.setenv("HERMES_KANBAN_CLAIM_LOCK", task.claim_lock)
@@ -49,7 +50,13 @@ def test_resume_refuses_changed_execution_context(retry, change):
         prepare_resume(task, str(workspace), str(home))
 
 
-def test_reclaimed_claim_without_a_worker_keeps_last_durable_session(retry):
+def _bind_replacement(task, monkeypatch):
+    monkeypatch.setenv("HERMES_KANBAN_RUN_ID", str(task.current_run_id))
+    monkeypatch.setenv("HERMES_KANBAN_CLAIM_LOCK", task.claim_lock)
+    bind_worker_session("durable-session")
+
+
+def test_reclaimed_claim_without_a_worker_keeps_last_durable_session(retry, monkeypatch):
     task, workspace, home = retry
     with connect_closing() as conn, kb.write_txn(conn):
         kb._end_run(conn, task.id, outcome="reclaimed")
@@ -57,6 +64,7 @@ def test_reclaimed_claim_without_a_worker_keeps_last_durable_session(retry):
     with connect_closing() as conn:
         replacement = kb.claim_task(conn, task.id)
     assert prepare_resume(replacement, str(workspace), str(home)) == "durable-session"
+    _bind_replacement(replacement, monkeypatch)
     with connect_closing() as conn:
         run = conn.execute("SELECT resumed_from_run_id FROM task_runs WHERE id = ?",
                            (replacement.current_run_id,)).fetchone()
@@ -95,19 +103,24 @@ def test_exit_trailer_cannot_cross_an_invocation_boundary(tmp_path, monkeypatch)
     assert _worker_log_exit_code("t_boundary") == 75
 
 
-def test_show_exposes_the_durable_resume_lineage(retry):
+def test_show_exposes_the_durable_resume_lineage(retry, monkeypatch):
     import json
     from tools.kanban_tools import _handle_show
     task, workspace, home = retry
     prepare_resume(task, str(workspace), str(home))
+    _bind_replacement(task, monkeypatch)
     run = json.loads(_handle_show({"task_id": task.id}))["runs"][-1]
     assert run["worker_session_id"] == "durable-session"
     assert run["resumed_from_run_id"] < task.current_run_id
 
 
-def test_stale_worker_cannot_bind_session_to_replacement_run(retry):
+def test_stale_worker_cannot_bind_session_to_replacement_run(retry, monkeypatch):
+    import os
     task, workspace, home = retry
-    prepare_resume(task, str(workspace), str(home))
+    old_run, old_lock = os.environ["HERMES_KANBAN_RUN_ID"], os.environ["HERMES_KANBAN_CLAIM_LOCK"]
+    _bind_replacement(task, monkeypatch)
+    monkeypatch.setenv("HERMES_KANBAN_RUN_ID", old_run)
+    monkeypatch.setenv("HERMES_KANBAN_CLAIM_LOCK", old_lock)
     with pytest.raises(RuntimeError, match="lost worker claim"):
         bind_worker_session("stale-overwrite")
     with connect_closing() as conn:

@@ -1,0 +1,3 @@
+$ .venv/bin/python scripts/probe_kanban_worker_resume.py --scratch /home/hermes/.hermes/profiles/backend-engineer/cache/scratch --signal SIGTERM
+{"death": "pid 833622 killed (SIGTERM); scope hermes-worker-kanban-t_f246c8c0-run-1.scope Worker's last output: '=== HERMES_KANBAN_RUN task=t_f246c8c0 run=1 started_at=1791235961 === DURABLE_RESUME_PREFIX_77881 \u250a \ud83d\udc93 preparing kanban_heartbeat\u2026 \u250a \u26a1 kanban_he   0.0s \u26a1 Interrupted during API call.'", "prefix_messages": 3, "prefix_present": true, "resumed_from_run_id": 1, "session_id": "20261005_173242_631f88", "workspace": "/home/hermes/.hermes/profiles/backend-engineer/cache/scratch/kanban-resume-probe-n4hxavxz/worktree", "worktree_head": "99b3fed8773a98652c0f1cb2d05636b930fe041e"}
+# exit: 0

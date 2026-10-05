@@ -1,0 +1,3 @@
+$ python scripts/check
+bash: line 1: python: command not found
+# exit: 127

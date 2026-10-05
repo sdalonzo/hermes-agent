@@ -1,0 +1,56 @@
+$ scripts/run_tests.sh tests/hermes_cli/test_kanban_worker_resume.py tests/e2e/core/kanban/test_kanban_worker_resume.py tests/e2e/core/kanban/test_kanban_worker_sigkill.py tests/hermes_cli/test_kanban_db.py tests/hermes_cli/test_kanban_worker_spawn_toolsets.py tests/hermes_cli/test_kanban_credential_startup_exit.py tests/hermes_cli/test_single_query_exit_contract.py tests/tools/test_kanban_tools.py -j 2 --tb=short
+▶ environment missing or stale for /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban — re-running under run-in-hermes-env
+
+[0;36m☤ Hermes Agent Setup[0m
+
+[0;36m→[0m Checking for uv...
+[0;32m✓[0m pinned uv found (uv 0.12.3 (x86_64-unknown-linux-gnu))
+[0;36m→[0m Installing python + tools + dependencies via pm (hash-verified via uv.lock)...
+[0;36m→[0m (first run on a fresh checkout can take 1-5 minutes)
+Python 3.14 is already installed
+✓ ffmpeg
+✓ node
+✓ npm
+✓ python
+✓ ripgrep
+✓ venv
+  → Resolving Python dependencies…
+  ✓ Resolving Python dependencies
+✓ test environment
+✓ agent-browser
+✓ cua-driver
+[0;32m✓[0m Tools + dependencies installed (hash-verified via pm + uv.lock)
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 8 test files (~122 tests) under ['tests/hermes_cli/test_kanban_worker_resume.py', 'tests/e2e/core/kanban/test_kanban_worker_resume.py', 'tests/e2e/core/kanban/test_kanban_worker_sigkill.py', 'tests/hermes_cli/test_kanban_db.py', 'tests/hermes_cli/test_kanban_worker_spawn_toolsets.py', 'tests/hermes_cli/test_kanban_credential_startup_exit.py', 'tests/hermes_cli/test_single_query_exit_contract.py', 'tests/tools/test_kanban_tools.py']; running with -j 2
+[  0.8% |     1/~122 | ✓2 | ✗0] ✓ tests/e2e/core/kanban/test_kanban_worker_resume.py (2✓, 19.9s)
+[  4.1% |     5/~122 | ✓4 | ✗0] ✓ tests/e2e/core/kanban/test_kanban_worker_sigkill.py (2✓ 2xf, 20.3s)
+[  5.7% |     7/~122 | ✓19 | ✗ 0] ✓ tests/hermes_cli/test_kanban_credential_startup_exit.py (15✓, 2.8s)
+[ 11.5% |    14/~122 | ✓33 | ✗ 0] ✓ tests/hermes_cli/test_kanban_worker_resume.py (14✓, 4.4s)
+[ 14.8% |    18/~122 | ✓37 | ✗ 0] ✓ tests/hermes_cli/test_kanban_worker_spawn_toolsets.py (4✓, 3.0s)
+[ 54.1% |    66/~122 | ✓91 | ✗ 0] ✓ tests/hermes_cli/test_kanban_db.py (54✓ 1s, 12.5s)
+[ 58.2% |    71/~122 | ✓110 | ✗  0] ✓ tests/hermes_cli/test_single_query_exit_contract.py (19✓, 4.2s)
+[100.0% |   122/~122 | ✓164 | ✗  0] ✓ tests/tools/test_kanban_tools.py (54✓, 14.1s)
+
+=== Summary: 8 files, 164 tests passed, 0 failed, 1 skipped (100% complete) in 46.9s (2 workers) ===
+
+  note: platforms('windows') tests (in 1 file) were SKIPPED on this host (linux); they run on the Windows Python-tests lane.
+  Durations cached to test_durations.json (8 files)
+
+=== Per-file subprocess time distribution ===
+  Files:   8
+  Total subprocess CPU-wall: 81.2s  (runner wall: 46.9s, parallelism: 2x)
+  P50: 12.50s  P90: 20.28s  P95: 20.28s  P99: 20.28s  Max: 20.28s
+  <1s: 0 files (0%)  <2s: 0 files (0%)
+  Top 10 slowest:
+     20.28s  tests/e2e/core/kanban/test_kanban_worker_sigkill.py
+     19.87s  tests/e2e/core/kanban/test_kanban_worker_resume.py
+     14.06s  tests/tools/test_kanban_tools.py
+     12.50s  tests/hermes_cli/test_kanban_db.py
+      4.37s  tests/hermes_cli/test_kanban_worker_resume.py
+      4.22s  tests/hermes_cli/test_single_query_exit_contract.py
+      3.01s  tests/hermes_cli/test_kanban_worker_spawn_toolsets.py
+      2.84s  tests/hermes_cli/test_kanban_credential_startup_exit.py
+# exit: 0

@@ -44,13 +44,16 @@ def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path, kill_sign
     hung = threading.Event()
     resumed = threading.Event()
     requests = []
+    retry_heads = []
     retry = threading.Event()
 
     def reply(rec):
         messages = rec["body"]["messages"]
         requests.append(messages)
         if retry.is_set():
-            resumed.set()
+            if not retry_heads:
+                retry_heads.append(subprocess.check_output(["git", "-C", str(tree), "rev-parse", "HEAD"], text=True, encoding="utf-8").strip())
+                resumed.set()
             if messages[-1]["role"] == "tool":
                 return Text("resumed task settled")
             return ToolCall("kanban_complete", {"summary": "resumed with durable prefix"})
@@ -61,12 +64,22 @@ def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path, kill_sign
 
     with FakeLLMServer(reply) as server:
         board = ScopedBoard(tmp_path, server.base_url)
+        repo, tree = tmp_path / "repo", tmp_path / "worktree"
+        subprocess.run(["git", "init", "-b", "main", str(repo)], check=True, capture_output=True)
+        (repo / "README.md").write_text("disposable continuation fixture\n")
+        subprocess.run(["git", "-C", str(repo), "add", "README.md"], check=True)
+        subprocess.run(["git", "-C", str(repo), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                        "commit", "-m", "fixture"], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(repo), "worktree", "add", "-b", "resume-proof", str(tree)],
+                       check=True, capture_output=True)
         try:
-            tid = board.create("resume disposable scope")
+            tid = board.create("resume disposable scope", "--workspace", f"worktree:{tree}", "--branch", "resume-proof")
             board.dispatch("--failure-limit", "5")
             wait_until(hung.is_set, 90, "worker to persist heartbeat and hang")
             first = board.runs(tid)[-1]
             workspace = board.task(tid)["workspace_path"]
+            assert workspace == str(tree)
+            original_head = subprocess.check_output(["git", "-C", str(tree), "rev-parse", "HEAD"], text=True, encoding="utf-8").strip()
             scope = f"hermes-worker-kanban-{tid}-run-{first['id']}.scope"
             live = subprocess.run(["systemctl", "--user", "show", scope, "-p", "ActiveState"],
                                   capture_output=True, text=True, check=True, env=systemd_user_bus_env())
@@ -83,6 +96,7 @@ def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path, kill_sign
             assert second["worker_session_id"] == first["worker_session_id"], second
             assert second["resumed_from_run_id"] == first["id"], second
             assert board.task(tid)["workspace_path"] == workspace
+            assert retry_heads[0] == original_head
             assert MARK in json.dumps(requests[2]), requests[2]
             old_history = [(m["role"], m.get("content"), m.get("tool_calls"))
                            for m in requests[1] if m["role"] != "system"]
@@ -95,6 +109,6 @@ def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path, kill_sign
             print(json.dumps({"session_id": second["worker_session_id"],
                               "resumed_from_run_id": second["resumed_from_run_id"],
                               "workspace": workspace, "death": killed["error"],
-                              "prefix_present": True, "prefix_messages": len(old_history)}, sort_keys=True))
+                              "prefix_present": True, "prefix_messages": len(old_history), "worktree_head": original_head}, sort_keys=True))
         finally:
             board.kill_workers()

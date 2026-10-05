@@ -1,0 +1,7 @@
+$ .venv/bin/python scripts/check
+
+=== health (ok) ===
+code health: 11 files vs 79af3f6cea80: 0 blocking, 0 advisory (2.0s)
+
+scripts/check: 11 checks, ok
+# exit: 0

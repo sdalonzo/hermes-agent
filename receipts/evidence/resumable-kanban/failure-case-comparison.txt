@@ -1,0 +1,9 @@
+Candidate: 6b3b024bc6803dd20c33e22509d6dabe32b8f94d
+Base: c53536929e485a2064d915d83593e3b50c86e4fc
+Candidate-only failed cases:
+tests/cron/test_cron_kanban_env_isolation.py::test_dispatcher_grants_only_the_assigned_worker_scope
+tests/hermes_cli/test_subprocess_text_encoding.py::test_text_mode_subprocess_calls_pin_utf8[kanban_worker_resume.py]
+tests/tui_gateway/test_change_watcher.py::test_pairing_probe_reuses_live_profile_roots_until_the_profile_set_moves
+tests/tui_gateway/test_change_watcher_sessions.py::test_sessions_signature_changes_for_session_metadata_updates
+Base-only failed cases:
+

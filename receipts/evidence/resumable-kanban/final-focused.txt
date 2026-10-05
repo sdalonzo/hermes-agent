@@ -1,0 +1,60 @@
+$ scripts/run_tests.sh tests/hermes_cli/test_kanban_worker_resume.py tests/e2e/core/kanban/test_kanban_worker_resume.py tests/e2e/core/kanban/test_kanban_worker_sigkill.py tests/hermes_cli/test_kanban_db.py tests/hermes_cli/test_kanban_worker_spawn_toolsets.py tests/hermes_cli/test_kanban_credential_startup_exit.py tests/hermes_cli/test_single_query_exit_contract.py tests/tools/test_kanban_tools.py tests/cron/test_cron_kanban_env_isolation.py tests/hermes_cli/test_subprocess_text_encoding.py -j 2 --tb=short
+▶ environment missing or stale for /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban — re-running under run-in-hermes-env
+
+[0;36m☤ Hermes Agent Setup[0m
+
+[0;36m→[0m Checking for uv...
+[0;32m✓[0m pinned uv found (uv 0.12.3 (x86_64-unknown-linux-gnu))
+[0;36m→[0m Installing python + tools + dependencies via pm (hash-verified via uv.lock)...
+[0;36m→[0m (first run on a fresh checkout can take 1-5 minutes)
+Python 3.14 is already installed
+✓ ffmpeg
+✓ node
+✓ npm
+✓ python
+✓ ripgrep
+✓ venv
+  → Resolving Python dependencies…
+  ✓ Resolving Python dependencies
+✓ test environment
+✓ agent-browser
+✓ cua-driver
+[0;32m✓[0m Tools + dependencies installed (hash-verified via pm + uv.lock)
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 10 test files (~138 tests) under ['tests/hermes_cli/test_kanban_worker_resume.py', 'tests/e2e/core/kanban/test_kanban_worker_resume.py', 'tests/e2e/core/kanban/test_kanban_worker_sigkill.py', 'tests/hermes_cli/test_kanban_db.py', 'tests/hermes_cli/test_kanban_worker_spawn_toolsets.py', 'tests/hermes_cli/test_kanban_credential_startup_exit.py', 'tests/hermes_cli/test_single_query_exit_contract.py', 'tests/tools/test_kanban_tools.py', 'tests/cron/test_cron_kanban_env_isolation.py', 'tests/hermes_cli/test_subprocess_text_encoding.py']; running with -j 2
+[ 10.9% |    15/~138 | ✓15 | ✗ 0] ✓ tests/cron/test_cron_kanban_env_isolation.py (15✓, 3.2s)
+[ 11.6% |    16/~138 | ✓17 | ✗ 0] ✓ tests/e2e/core/kanban/test_kanban_worker_resume.py (2✓, 15.3s)
+[ 13.0% |    18/~138 | ✓32 | ✗ 0] ✓ tests/hermes_cli/test_kanban_credential_startup_exit.py (15✓, 2.1s)
+[ 15.9% |    22/~138 | ✓34 | ✗ 0] ✓ tests/e2e/core/kanban/test_kanban_worker_sigkill.py (2✓ 2xf, 16.6s)
+[ 21.0% |    29/~138 | ✓48 | ✗ 0] ✓ tests/hermes_cli/test_kanban_worker_resume.py (14✓, 2.9s)
+[ 23.9% |    33/~138 | ✓52 | ✗ 0] ✓ tests/hermes_cli/test_kanban_worker_spawn_toolsets.py (4✓, 2.4s)
+[ 58.7% |    81/~138 | ✓106 | ✗  0] ✓ tests/hermes_cli/test_kanban_db.py (54✓ 1s, 7.9s)
+[ 62.3% |    86/~138 | ✓125 | ✗  0] ✓ tests/hermes_cli/test_single_query_exit_contract.py (19✓, 4.3s)
+[ 63.0% |    87/~138 | ✓773 | ✗  0] ✓ tests/hermes_cli/test_subprocess_text_encoding.py (648✓, 11.3s)
+[100.0% |   138/~138 | ✓827 | ✗  0] ✓ tests/tools/test_kanban_tools.py (54✓, 11.3s)
+
+=== Summary: 10 files, 827 tests passed, 0 failed, 1 skipped (100% complete) in 40.7s (2 workers) ===
+
+  note: platforms('windows') tests (in 1 file) were SKIPPED on this host (linux); they run on the Windows Python-tests lane.
+  Durations cached to test_durations.json (10 files)
+
+=== Per-file subprocess time distribution ===
+  Files:   10
+  Total subprocess CPU-wall: 77.4s  (runner wall: 40.7s, parallelism: 2x)
+  P50: 7.94s  P90: 16.59s  P95: 16.59s  P99: 16.59s  Max: 16.59s
+  <1s: 0 files (0%)  <2s: 0 files (0%)
+  Top 10 slowest:
+     16.59s  tests/e2e/core/kanban/test_kanban_worker_sigkill.py
+     15.33s  tests/e2e/core/kanban/test_kanban_worker_resume.py
+     11.32s  tests/tools/test_kanban_tools.py
+     11.31s  tests/hermes_cli/test_subprocess_text_encoding.py
+      7.94s  tests/hermes_cli/test_kanban_db.py
+      4.26s  tests/hermes_cli/test_single_query_exit_contract.py
+      3.17s  tests/cron/test_cron_kanban_env_isolation.py
+      2.94s  tests/hermes_cli/test_kanban_worker_resume.py
+      2.41s  tests/hermes_cli/test_kanban_worker_spawn_toolsets.py
+      2.12s  tests/hermes_cli/test_kanban_credential_startup_exit.py
+# exit: 0

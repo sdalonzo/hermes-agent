@@ -110,29 +110,26 @@ def _prior_worker_run(conn, task):
     return None
 
 
+def _checked_prior_run(conn, task, context):
+    previous = _prior_worker_run(conn, task)
+    if previous and json.loads(previous["worker_context"] or "null") != context:
+        raise ValueError(f"task {task.id}: retry context changed; refusing worker session resume")
+    return previous
+
+
 def prepare_resume(task, workspace, home, *, board=None):
-    """Bind spawn coordinates and return a safe retry's session, never the creator's session."""
-    from hermes_cli import kanban_db as kb
+    """Select a safe session without writing under the dispatcher's inherited child fence."""
     from hermes_cli.kanban_db_connect import connect_closing
 
     if task.current_run_id is None:
         return None
-    context = _context(task, workspace, home)
-    with connect_closing(board=board) as conn, kb.write_txn(conn):
+    with connect_closing(board=board) as conn:
         current = conn.execute("SELECT id FROM task_runs WHERE id = ? AND task_id = ? AND ended_at IS NULL",
                                (task.current_run_id, task.id)).fetchone()
         if current is None:
             return None
-        previous = _prior_worker_run(conn, task)
-        session_id = resumed_from = None
-        if previous:
-            if json.loads(previous["worker_context"] or "null") != context:
-                raise ValueError(f"task {task.id}: retry context changed; refusing worker session resume")
-            session_id, resumed_from = previous["worker_session_id"], previous["id"]
-        conn.execute("UPDATE task_runs SET worker_context = ?, worker_session_id = ?, "
-                     "resumed_from_run_id = ? WHERE id = ?",
-                     (json.dumps(context, sort_keys=True), session_id, resumed_from, task.current_run_id))
-        return session_id
+        previous = _checked_prior_run(conn, task, _context(task, workspace, home))
+        return previous["worker_session_id"] if previous else None
 
 
 def bind_cli_worker_session(cli):
@@ -160,6 +157,12 @@ def bind_worker_session(session_id):
                            (session_id, run_id, task_id, lock, task_id, run_id, lock))
         if cur.rowcount != 1:
             raise RuntimeError(f"task {task_id}: lost worker claim before session binding")
+        from hermes_constants import get_hermes_home
+        task = kb.get_task(conn, task_id)
+        context = _context(task, os.environ["HERMES_KANBAN_WORKSPACE"], get_hermes_home())
+        previous = _checked_prior_run(conn, task, context)
+        conn.execute("UPDATE task_runs SET worker_context = ?, resumed_from_run_id = ? WHERE id = ?",
+                     (json.dumps(context, sort_keys=True), previous["id"] if previous else None, run_id))
 
 
 def observed_scope_death(task_id, *, board=None):
@@ -183,7 +186,7 @@ def journal_death(task_id, run_id, started_at, worker_pid):
         result = subprocess.run(
             ["journalctl", "--user", "--unit", scope, "--since", f"@{int(started_at)}",
              "--no-pager", "--output=cat"],
-            capture_output=True, text=True, timeout=3, env=systemd_user_bus_env())
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3, env=systemd_user_bus_env())
     except (OSError, subprocess.TimeoutExpired):
         return None
     if result.returncode != 0:
