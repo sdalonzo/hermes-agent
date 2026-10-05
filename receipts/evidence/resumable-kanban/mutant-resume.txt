@@ -1,0 +1,75 @@
+$ scripts/run_tests.sh --file-retries 0 tests/e2e/core/kanban/test_kanban_worker_resume.py --tb=short
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~1 tests) under ['tests/e2e/core/kanban/test_kanban_worker_resume.py']; running with -j 16
+[100.0% |     1/~1 | ✓0 | ✗1] ✗ tests/e2e/core/kanban/test_kanban_worker_resume.py (1✗, 9.0s)
+
+  ╔╍ Failed: tests/e2e/core/kanban/test_kanban_worker_resume.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║ ============================= test session starts ==============================
+  ║ platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+  ║ rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+  ║ configfile: pyproject.toml
+  ║ plugins: asyncio-1.3.0, anyio-4.14.2
+  ║ asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+  ║ collected 1 item
+  ║ 
+  ║ tests/e2e/core/kanban/test_kanban_worker_resume.py F                     [100%]
+  ║ 
+  ║ =================================== FAILURES ===================================
+  ║ ___________ test_sigkilled_scope_resumes_exact_session_and_workspace ___________
+  ║ tests/e2e/core/kanban/test_kanban_worker_resume.py:82: in test_sigkilled_scope_resumes_exact_session_and_workspace
+  ║     assert second["worker_session_id"] == first["worker_session_id"], second
+  ║ E   AssertionError: {'id': 2, 'task_id': 't_ea048160', 'profile': 'default', 'step_key': None, ...}
+  ║ E   assert '20261005_155815_15a389' == '20261005_155811_1cdc6e'
+  ║ E     
+  ║ E     - 20261005_155811_1cdc6e
+  ║ E     + 20261005_155815_15a389
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/e2e/core/kanban/test_kanban_worker_resume.py::test_sigkilled_scope_resumes_exact_session_and_workspace
+  ║ ============================== 1 failed in 8.07s ===============================
+  ║
+  ║  Repro: python -m pytest tests/e2e/core/kanban/test_kanban_worker_resume.py --tb=short
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 0 tests passed, 1 failed (100% complete) in 9.1s (16 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 9.0s  (runner wall: 9.1s, parallelism: 16x)
+  P50: 9.04s  P90: 9.04s  P95: 9.04s  P99: 9.04s  Max: 9.04s
+  <1s: 0 files (0%)  <2s: 0 files (0%)
+  Top 10 slowest:
+      9.04s  tests/e2e/core/kanban/test_kanban_worker_resume.py
+
+=== Failure output ===
+
+--- tests/e2e/core/kanban/test_kanban_worker_resume.py ---
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.14.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/e2e/core/kanban/test_kanban_worker_resume.py F                     [100%]
+
+=================================== FAILURES ===================================
+___________ test_sigkilled_scope_resumes_exact_session_and_workspace ___________
+tests/e2e/core/kanban/test_kanban_worker_resume.py:82: in test_sigkilled_scope_resumes_exact_session_and_workspace
+    assert second["worker_session_id"] == first["worker_session_id"], second
+E   AssertionError: {'id': 2, 'task_id': 't_ea048160', 'profile': 'default', 'step_key': None, ...}
+E   assert '20261005_155815_15a389' == '20261005_155811_1cdc6e'
+E     
+E     - 20261005_155811_1cdc6e
+E     + 20261005_155815_15a389
+=========================== short test summary info ============================
+FAILED tests/e2e/core/kanban/test_kanban_worker_resume.py::test_sigkilled_scope_resumes_exact_session_and_workspace
+============================== 1 failed in 8.07s ===============================
+
+=== 1 file with test failures (1 test failed) ===
+  tests/e2e/core/kanban/test_kanban_worker_resume.py  (1 test failed)
+# exit: 1

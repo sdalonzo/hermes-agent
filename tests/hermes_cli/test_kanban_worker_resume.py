@@ -49,6 +49,28 @@ def test_resume_refuses_changed_execution_context(retry, change):
         prepare_resume(task, str(workspace), str(home))
 
 
+@pytest.mark.parametrize("store", [None, object()])
+def test_resume_cannot_enter_inference_with_missing_transcript(store):
+    from types import SimpleNamespace
+    from hermes_cli.kanban_worker_resume import bind_cli_worker_session
+    cli = SimpleNamespace(_session_db=store, _resumed=True, conversation_history=[], session_id="missing-history")
+    with pytest.raises(RuntimeError, match="refusing a fresh conversation"):
+        bind_cli_worker_session(cli)
+
+
+def test_exit_trailer_cannot_cross_an_invocation_boundary(tmp_path, monkeypatch):
+    from hermes_cli.kanban_db_dispatch import _worker_log_exit_code
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    logs = kb.worker_logs_dir()
+    logs.mkdir(parents=True)
+    path = logs / "t_boundary.log"
+    path.write_text("[kanban-worker-exit] rc=0\n=== HERMES_KANBAN_RUN task=t_boundary run=2 ===\n")
+    assert _worker_log_exit_code("t_boundary") is None
+    with path.open("a") as log:
+        log.write("[kanban-worker-exit] rc=75\n")
+    assert _worker_log_exit_code("t_boundary") == 75
+
+
 def test_stale_worker_cannot_bind_session_to_replacement_run(retry):
     task, workspace, home = retry
     prepare_resume(task, str(workspace), str(home))

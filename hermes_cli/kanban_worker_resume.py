@@ -122,6 +122,13 @@ def prepare_resume(task, workspace, home, *, board=None):
         return session_id
 
 
+def bind_cli_worker_session(cli):
+    """No model entry with a missing store or an empty resumed transcript."""
+    if cli._session_db is None or (cli._resumed and not cli.conversation_history):
+        raise RuntimeError("cannot restore kanban worker session; refusing a fresh conversation")
+    bind_worker_session(cli.session_id)
+
+
 def bind_worker_session(session_id):
     """Persist before the first provider call, guarded by the exact current claim."""
     from hermes_cli import kanban_db as kb
@@ -171,7 +178,7 @@ def journal_death(task_id, run_id, started_at):
     for line in result.stdout.splitlines():
         if "oom-kill" in line or "OOM killer" in line:
             return {"scope": scope, "reason": "oom-kill", "journal_evidence": line}
-        match = re.search(r"Killed unit cgroup with (SIGKILL|SIGTERM)\b", line)
+        match = re.search(r"(?:Killed unit cgroup with|Sending signal) (SIGKILL|SIGTERM)\b", line)
         if match:
             return {"scope": scope, "reason": match[1], "journal_evidence": line}
     return None

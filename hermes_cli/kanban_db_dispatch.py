@@ -274,7 +274,8 @@ def _worker_log_exit_code(task_id: str, board: Optional[str] = None) -> Optional
         raw = _kb.read_worker_log(task_id, tail_bytes=4000, board=board)
     except Exception:
         return None
-    matches = _EXIT_TRAILER_RE.findall(raw or "")
+    raw = (raw or "").rsplit("=== HERMES_KANBAN_RUN ", 1)[-1]
+    matches = _EXIT_TRAILER_RE.findall(raw)
     return int(matches[-1]) if matches else None
 
 
@@ -2721,7 +2722,10 @@ def _open_worker_log(task: Task, board: Optional[str]):
     log_path = log_dir / f"{task.id}.log"
     rotate_bytes, backup_count = worker_log_rotation_config()
     _rotate_worker_log(log_path, rotate_bytes, backup_count)
-    return open(log_path, "ab")
+    log = open(log_path, "ab")
+    log.write(f"\n=== HERMES_KANBAN_RUN task={task.id} run={task.current_run_id} started_at={task.started_at} ===\n".encode())
+    log.flush()
+    return log
 
 
 def _restart_safe_worker_argv(task: Task, command: list[str]) -> list[str]:

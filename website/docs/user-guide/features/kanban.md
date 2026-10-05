@@ -596,8 +596,23 @@ auth` / `setup`), then `hermes kanban unblock <id>`. The worker also writes its 
 last line of its own log (`[kanban-worker-exit] rc=<code>`), so a per-tick
 `hermes kanban dispatch` process — which never reaped the worker and cannot
 read its exit status — books the same death the same way the gateway-embedded
-dispatcher does; a worker killed before it reaches that line is a plain
-`crashed` (`pid <n> not alive`).
+dispatcher does. Invocation headers prevent an earlier run's trailer from
+classifying a retry. For systemd workers, the dispatcher checks the exact
+run scope in the user journal first. An OOM kill or explicit SIGKILL/SIGTERM
+is recorded as `crashed` with `exit_kind: killed`, the reason and journal
+evidence. Without observed kill evidence or an exit status, the cause stays
+unknown (`pid <n> not alive`).
+
+**Crash continuation:** A worker records `worker_session_id` on its run
+before its first provider call. A retry after a crash, timeout, reclaim or
+quota wall resumes that profile-local session in the same workspace.
+`resumed_from_run_id` links the new attempt to its predecessor. The creator's
+`tasks.session_id` is never a worker continuation key. Changed profile, home,
+workspace, branch, step, model/provider pins, skills or goal mode refuse
+resume. A missing or empty saved transcript fails before inference rather
+than silently starting a fresh conversation. Legacy runs without a worker
+session ID still start fresh. Claim ownership and existing retry budgets
+remain enforced; this does not promise exactly-once tool side effects.
 
 **Agent-side prevention:** Before the worker exits, Hermes injects up to two
 synthetic nudges when it detects the model is about to stop without a terminal

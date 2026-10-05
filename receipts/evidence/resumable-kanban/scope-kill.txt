@@ -1,0 +1,3 @@
+$ /home/hermes/.hermes/installs/a7b17937abe88bbf/test-environment/gen-ae56673fe14c4cdd82a6cac56d8e70ba/venv/bin/python scripts/probe_kanban_worker_resume.py --scratch /home/hermes/.hermes/profiles/backend-engineer/cache/scratch
+{"death": "pid 4120205 killed (SIGKILL); scope hermes-worker-kanban-t_75cc64a0-run-1.scope Worker's last output: 'DURABLE_RESUME_PREFIX_77881 \u250a \ud83d\udc93 preparing kanban_heartbeat\u2026 \u250a \u26a1 kanban_he   0.0s'", "prefix_present": true, "resumed_from_run_id": 1, "session_id": "20261005_155735_6049e8", "workspace": "/home/hermes/.hermes/profiles/backend-engineer/cache/scratch/kanban-resume-probe-m7toy17e/home/.hermes/kanban/workspaces/t_75cc64a0"}
+# exit: 0

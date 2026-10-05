@@ -1,0 +1,81 @@
+$ scripts/run_tests.sh --file-retries 0 tests/hermes_cli/test_kanban_worker_resume.py -k missing_transcript --tb=short
+▶ running per-file parallel test suite via run_tests_parallel.py
+  (TZ=UTC LANG=C.UTF-8 PYTHONHASHSEED=0; clean env)
+▶ pre-compiling bytecode cache
+▶ launching test runner
+Discovered 1 test files (~4 tests) under ['tests/hermes_cli/test_kanban_worker_resume.py']; running with -j 16
+[100.0% |     4/~4 | ✓0 | ✗2] ✗ tests/hermes_cli/test_kanban_worker_resume.py (2✗, 0.6s)
+
+  ╔╍ Failed: tests/hermes_cli/test_kanban_worker_resume.py ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+  ║ ============================= test session starts ==============================
+  ║ platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+  ║ rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+  ║ configfile: pyproject.toml
+  ║ plugins: asyncio-1.3.0, anyio-4.14.2
+  ║ asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+  ║ collected 11 items / 9 deselected / 2 selected
+  ║ 
+  ║ tests/hermes_cli/test_kanban_worker_resume.py FF                         [100%]
+  ║ 
+  ║ =================================== FAILURES ===================================
+  ║ _______ test_resume_cannot_enter_inference_with_missing_transcript[None] _______
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:57: in test_resume_cannot_enter_inference_with_missing_transcript
+  ║     with pytest.raises(RuntimeError, match="refusing a fresh conversation"):
+  ║          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ E   Failed: DID NOT RAISE RuntimeError
+  ║ ______ test_resume_cannot_enter_inference_with_missing_transcript[store1] ______
+  ║ tests/hermes_cli/test_kanban_worker_resume.py:57: in test_resume_cannot_enter_inference_with_missing_transcript
+  ║     with pytest.raises(RuntimeError, match="refusing a fresh conversation"):
+  ║          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ║ E   Failed: DID NOT RAISE RuntimeError
+  ║ =========================== short test summary info ============================
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_cannot_enter_inference_with_missing_transcript[None]
+  ║ FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_cannot_enter_inference_with_missing_transcript[store1]
+  ║ ======================= 2 failed, 9 deselected in 0.31s ========================
+  ║
+  ║  Repro: python -m pytest tests/hermes_cli/test_kanban_worker_resume.py -k missing_transcript --tb=short
+  ╚╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍
+
+
+=== Summary: 1 files, 0 tests passed, 2 failed (100% complete) in 0.6s (16 workers) ===
+
+=== Per-file subprocess time distribution ===
+  Files:   1
+  Total subprocess CPU-wall: 0.6s  (runner wall: 0.6s, parallelism: 16x)
+  P50: 0.56s  P90: 0.56s  P95: 0.56s  P99: 0.56s  Max: 0.56s
+  <1s: 1 files (100%)  <2s: 1 files (100%)
+  Top 10 slowest:
+      0.56s  tests/hermes_cli/test_kanban_worker_resume.py
+
+=== Failure output ===
+
+--- tests/hermes_cli/test_kanban_worker_resume.py ---
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: /srv/butshouldwe/.worktrees/hermes-agent/kernel/resumable-kanban
+configfile: pyproject.toml
+plugins: asyncio-1.3.0, anyio-4.14.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 11 items / 9 deselected / 2 selected
+
+tests/hermes_cli/test_kanban_worker_resume.py FF                         [100%]
+
+=================================== FAILURES ===================================
+_______ test_resume_cannot_enter_inference_with_missing_transcript[None] _______
+tests/hermes_cli/test_kanban_worker_resume.py:57: in test_resume_cannot_enter_inference_with_missing_transcript
+    with pytest.raises(RuntimeError, match="refusing a fresh conversation"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE RuntimeError
+______ test_resume_cannot_enter_inference_with_missing_transcript[store1] ______
+tests/hermes_cli/test_kanban_worker_resume.py:57: in test_resume_cannot_enter_inference_with_missing_transcript
+    with pytest.raises(RuntimeError, match="refusing a fresh conversation"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE RuntimeError
+=========================== short test summary info ============================
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_cannot_enter_inference_with_missing_transcript[None]
+FAILED tests/hermes_cli/test_kanban_worker_resume.py::test_resume_cannot_enter_inference_with_missing_transcript[store1]
+======================= 2 failed, 9 deselected in 0.31s ========================
+
+=== 1 file with test failures (2 tests failed) ===
+  tests/hermes_cli/test_kanban_worker_resume.py  (2 tests failed)
+# exit: 1

@@ -4,6 +4,7 @@ imported lazily inside each method (import cycle)."""
 
 from __future__ import annotations
 
+import os
 import sys
 
 from rich.markup import escape as _escape
@@ -663,6 +664,9 @@ class CLIAgentSetupMixin:
                 if single_query_mode
                 else self._clarify_callback)
             connection_callback = None if single_query_mode else self._connection_callback
+            if single_query_mode and os.environ.get("HERMES_KANBAN_TASK"):
+                from hermes_cli.kanban_worker_resume import bind_cli_worker_session
+                bind_cli_worker_session(self)
             self.agent = AIAgent(
                 model=effective_model, api_key=runtime.get("api_key"),
                 base_url=runtime.get("base_url"), provider=runtime.get("provider"),

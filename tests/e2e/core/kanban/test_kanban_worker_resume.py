@@ -36,7 +36,11 @@ class ScopedBoard(Board):
         return proc
 
 
-def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path):
+@pytest.mark.parametrize("kill_signal", ["SIGKILL", "SIGTERM"])
+def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path, kill_signal):
+    from tools.process_registry import _systemd_run_user_scope_available
+    if not _systemd_run_user_scope_available():
+        pytest.skip("requires a reachable systemd user scope bus")
     hung = threading.Event()
     resumed = threading.Event()
     requests = []
@@ -67,7 +71,7 @@ def test_sigkilled_scope_resumes_exact_session_and_workspace(tmp_path):
             live = subprocess.run(["systemctl", "--user", "show", scope, "-p", "ActiveState"],
                                   capture_output=True, text=True, check=True, env=systemd_user_bus_env())
             assert "ActiveState=active" in live.stdout, live.stdout
-            subprocess.run(["systemctl", "--user", "kill", "--signal=SIGKILL", scope], check=True, env=systemd_user_bus_env())
+            subprocess.run(["systemctl", "--user", "kill", f"--signal={kill_signal}", scope], check=True, env=systemd_user_bus_env())
             wait_until(lambda: not pid_alive(first["worker_pid"]), 15, "killed scope to exit")
             retry.set()
             board.dispatch("--failure-limit", "5")
