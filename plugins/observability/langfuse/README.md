@@ -76,6 +76,11 @@ names, token usage, cost, timing — is always captured in every mode.
 
 The active mode is recorded on every trace as `metadata.capture_mode`.
 
+The mode is per profile. When one process serves several profiles (the
+multiplexed gateway or dashboard), each profile's mode comes from its own
+`.env`. A served profile that does not set it gets `sanitized`, not the launch
+profile's value.
+
 Note: `sanitized` is pattern-based defense in depth, not a DLP guarantee.
 For personal sessions or shared Langfuse projects, prefer `metadata`.
 

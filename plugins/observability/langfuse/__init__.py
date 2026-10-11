@@ -119,9 +119,11 @@ _warned_invalid_capture = False
 def _capture_mode() -> str:
     """Resolve ``metadata | sanitized | full``; read per call so long-lived processes
     can flip modes. Invalid values warn once and fall back to the default (never
-    capture more than the operator intended)."""
+    capture more than the operator intended). Read through the profile secret scope
+    like SAMPLE_RATE: a multiplexed process serves several profiles, and each one's
+    mode must come from its own ``.env``, never the launch profile's ``os.environ``."""
     global _warned_invalid_capture
-    value = _env("HERMES_LANGFUSE_CAPTURE").lower()
+    value = _secret("HERMES_LANGFUSE_CAPTURE").lower()
     if not value or value in _CAPTURE_MODES:
         return value or _DEFAULT_CAPTURE_MODE
     if not _warned_invalid_capture:
