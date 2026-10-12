@@ -798,6 +798,26 @@ and limited to 10 MiB per plugin. Portable packages share the same directory as
 their `PLUGIN_DATA`; native plugins receive a collision-resistant,
 Windows-safe namespace. Malformed existing state is reported and preserved.
 
+Use `ctx.state.update(values, delete=keys)` to set and remove many keys as one
+transaction. It takes one lock, reads the current file once, and atomically
+replaces it once. Missing deletion keys are ignored; keys in both arguments
+are rejected. Every key is validated, and the 10 MiB quota applies to the
+result after deletions. Invalid keys, non-JSON values, or quota failures leave
+the previous file unchanged. `update({})` is a no-op.
+
+```python
+ctx.state.update({"cursor": {"page": 3}, "last_sync": 42}, delete=["old_cursor"])
+ctx.state.update({}, delete=["expired_cache", "old_dedup_record"])
+records = ctx.state.snapshot()  # One locked read, not one read per key.
+```
+
+`snapshot()` returns a detached dictionary, or `{}` when no state file exists.
+Changing that dictionary does not persist changes. A snapshot and a later
+update are separate transactions, not a compare-and-swap. An update preserves
+unrelated concurrent writes, but does not detect changes to the same keys
+since a snapshot. Use deletion based on a snapshot only when that race is
+acceptable, such as records that cannot become live again.
+
 Config and state have different owners: settings are user-visible behavior in
 `config.yaml`, while state is plugin-owned runtime data under
 `<HERMES_HOME>/plugin-data/`. Neither API exposes another plugin's namespace.

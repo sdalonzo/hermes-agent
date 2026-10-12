@@ -8,7 +8,7 @@ import re
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Iterable, Mapping
 
 from hermes_constants import get_hermes_home
 from hermes_cli.plugins_manifest import _portable_skill_namespace
@@ -175,6 +175,47 @@ class PluginState:
         self._validate_key(key)
         with _locked_plugin_state(self.path):
             return self._read_unlocked().get(key, default)
+
+    def snapshot(self) -> dict[str, Any]:
+        """Read all state in one lock/read; mutating the result does not persist it.
+
+        A later update is a separate transaction, not a compare-and-swap.
+        """
+        with _locked_plugin_state(self.path):
+            return self._read_unlocked()
+
+    def update(self, values: Mapping[str, Any], *, delete: Iterable[str] = ()) -> None:
+        """Atomically set and delete keys with one lock, read, and file replacement.
+
+        Missing deletion keys are ignored. Keys present in both arguments are
+        rejected. Validation, serialization, or quota failures leave state unchanged.
+        """
+        if isinstance(delete, (str, bytes)):
+            raise TypeError("Plugin state delete must be an iterable of keys, not a string")
+        values = dict(values)
+        delete = tuple(delete)
+        for key in (*values, *delete):
+            self._validate_key(key)
+        if values.keys() & set(delete):
+            raise ValueError("Plugin state keys cannot be both updated and deleted")
+        if not values and not delete:
+            return
+        with _locked_plugin_state(self.path):
+            data = self._read_unlocked()
+            for key in delete:
+                data.pop(key, None)
+            data.update(values)
+            try:
+                encoded = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
+            except (TypeError, ValueError) as exc:
+                raise ValueError("Plugin state update is not JSON-serializable") from exc
+            if len(encoded) > self.quota_bytes:
+                raise ValueError(
+                    f"Plugin state quota exceeded: {len(encoded)} bytes is greater "
+                    f"than the {self.quota_bytes}-byte per-plugin quota"
+                )
+            from utils import atomic_write_bytes
+            atomic_write_bytes(self.path, encoded, mode=0o600)
 
     def set(self, key: str, value: Any) -> None:
         """Atomically set one JSON value without dropping concurrent updates."""
