@@ -698,7 +698,9 @@ def _rule_stranded_in_ready(task, events, runs, now, cfg) -> list[Diagnostic]:
     # Most recent event that put the task into ready; with none (old task /
     # truncated events) fall back to created_at — over-flagging an ancient
     # task beats missing a stranded one.
-    last_ready_ts = _latest_event_ts(events, {"created", "promoted", "reclaimed", "unblocked"})
+    last_ready_ts = _latest_event_ts(
+        events, {"created", "promoted", "reclaimed", "unblocked", "review_reopened"},
+    )
     if last_ready_ts == 0:
         last_ready_ts = int(_task_field(task, "created_at", default=0) or 0)
     if last_ready_ts == 0:
@@ -736,6 +738,106 @@ def _rule_stranded_in_ready(task, events, runs, now, cfg) -> list[Diagnostic]:
     )]
 
 
+def _review_text(data: dict, *keys: str) -> Optional[str]:
+    for key in keys:
+        value = data.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+    return None
+
+
+def _review_payload(event) -> dict:
+    parsed = _parse_payload(event)
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _review_cause(metadata: dict, head: Optional[str], pr: Optional[str], red_return: bool) -> str:
+    # Native changes_requested provenance belongs to the current review cycle.
+    if red_return:
+        return "red_return_overdue"
+    if not head or not pr:
+        return "unknown"
+    if metadata.get("merged") is True:
+        return "delivery_pending" if metadata.get("pr_head") == head else "unknown"
+    verdict = _review_text(metadata, "verdict")
+    if verdict is None:
+        return "awaiting_verdict"
+    if metadata.get("verdict_head") != head:
+        return "unknown"
+    return {"CHANGES_REQUESTED": "red_return_overdue", "APPROVED": "merge_pending"}.get(
+        verdict.upper(), "unknown",
+    )
+
+
+_REVIEW_GATES = {
+    "awaiting_verdict": "review verdict",
+    "red_return_overdue": "authorized rework",
+    "merge_pending": "merge approval",
+    "delivery_pending": "delivery verification",
+    "unknown": "inspect review evidence",
+}
+
+
+def _rule_stale_in_review(task, events, runs, now, cfg) -> list[Diagnostic]:
+    """Review age: warning at 24h, error at 72h, always advisory for human holds.
+
+    Read only the current review_requested run's optional metadata. Recognize
+    pr/pr_url/published_pr, reviewed_head/head/head_sha, owner and next_gate.
+    Optional verdict + verdict_head or merged + pr_head must bind to that head.
+    human_hold=True and review_dispatch=False cap severity at warning. This is
+    an evidence reader, not a required handoff schema or a forge status fetch:
+    unrecorded external state remains unknown; prose is never a verdict.
+    """
+    if _task_field(task, "status") != "review":
+        return []
+    entries = [ev for ev in events if _event_kind(ev) == "review_requested"
+               or (_event_kind(ev) in {"unblocked", "status", "reclaimed"}
+                   and _review_payload(ev).get("status") == "review")]
+    since = _event_ts(entries[-1]) if entries else 0
+    age = now - since
+    if not since or age < 24 * 3600:
+        return []
+
+    handoff_index = next((i for i in range(len(events) - 1, -1, -1)
+                          if _event_kind(events[i]) == "review_requested"), None)
+    handoff = events[handoff_index] if handoff_index is not None else None
+    handoff_payload = _review_payload(handoff)
+    run_id = _task_field(handoff, "run_id")
+    run = next((r for r in runs if run_id is not None and _task_field(r, "id") == run_id), None)
+    metadata = _review_payload({"payload": _task_field(run, "metadata")})
+    pr = _review_text(metadata, "pr", "pr_url", "published_pr")
+    contract = _task_field(task, "completion_contract")
+    if pr is None and isinstance(contract, str) and contract.startswith("https://"):
+        pr = contract
+    head = _review_text(metadata, "reviewed_head", "head", "head_sha")
+    red_return = handoff_index is not None and any(
+        _event_kind(ev) == "changes_requested" for ev in events[handoff_index + 1:]
+    )
+    cause = _review_cause(metadata, head, pr, red_return)
+    owner_key = "implementer" if cause in {"red_return_overdue", "delivery_pending"} else "reviewer"
+    owner = (_review_text(metadata, "owner") or _review_text(handoff_payload, owner_key)
+             or _task_field(task, "assignee"))
+    next_gate = _review_text(metadata, "next_gate") or _REVIEW_GATES[cause]
+    kanban_cfg = cfg.get("kanban")
+    dispatch = kanban_cfg.get("review_dispatch", True) if isinstance(kanban_cfg, dict) else None
+    policy = "automatic" if dispatch is True else "human-controlled" if dispatch is False else "unknown"
+    held = metadata.get("human_hold") is True or dispatch is False
+    severity = "error" if age >= 72 * 3600 and not held else "warning"
+    hold_detail = " Expected human hold; ask the owner for a decision, not a dispatcher repair." if held else ""
+    return [Diagnostic(
+        kind="stale_in_review", severity=severity,
+        title=f"In review for {age / 3600:.1f}h: {cause.replace('_', ' ')}",
+        detail=f"Review policy: {policy}; owner: {owner or 'unknown'}; PR: {pr or 'unknown'}; "
+               f"head: {head or 'unknown'}; next gate: {next_gate}. "
+               f"Cause reflects recorded evidence only, not live forge state.{hold_detail}",
+        actions=[DiagnosticAction(kind="comment", label=f"Ask the owner about {next_gate}", suggested=True)],
+        first_seen_at=since, last_seen_at=since, run_id=run_id,
+        data={"review_since": since, "age_seconds": age, "cause": cause, "policy": policy,
+              "owner": owner, "pr": pr, "head": head, "next_gate": next_gate,
+              "expected_human_hold": held},
+    )]
+
+
 # Order matters: earlier rules render first on severity ties.
 _RULES: list[RuleFn] = [
     _rule_hallucinated_cards,
@@ -748,6 +850,7 @@ _RULES: list[RuleFn] = [
     _rule_stuck_in_blocked,
     _rule_block_unblock_cycling,
     _rule_stranded_in_ready,
+    _rule_stale_in_review,
 ]
 
 
