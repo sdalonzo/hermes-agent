@@ -223,6 +223,11 @@ export class JsonRpcGatewayClient {
     return this.channel.clarifyBatch
   }
 
+  /** The connected backend admits `client` / `form_factor` on `prompt.submit` (`client.capabilities`). */
+  protected get backendTurnClient(): boolean {
+    return this.channel.turnClient
+  }
+
   async connect(wsUrl: string): Promise<void> {
     // Refuse garbage; WebSocket coerces non-strings into
     // `ws://<origin>/[object%20Object]` (#68250 stale-emit boot loop).

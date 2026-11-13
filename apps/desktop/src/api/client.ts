@@ -9,6 +9,7 @@ import {
 import { map, type MapStore } from 'nanostores'
 
 import type { HermesApiRequest } from '@/global'
+import { turnClientFields } from '@/lib/turn-client'
 
 import { CanonicalDesktopProtocol, canonicalProfile, canonicalPromptParams, canonicalSessionKey, openGatewaySocket, recordCanonicalOwner, splitRewindSubmit } from './canonical-protocol'
 import { DialReadiness, GATEWAY_NOT_CONNECTED_MESSAGE, remainingRequestBudget } from './dial-readiness'
@@ -455,6 +456,11 @@ export class HermesGateway extends JsonRpcGatewayClient {
     // turn's multi-question clarify as ONE request; undeclared, one card per question. An older
     // owner refuses the unknown key, so it rides only where `client.capabilities` advertised it.
     if (method === 'prompt.submit' && this.backendClarifyBatch) { params = { ...params, clarify_batch: true } }
+
+    // Which app and which kind of device sent this turn, for plugins (`pre_llm_call` `turn_client`).
+    // An older owner refuses the unknown keys, so they ride only where `client.capabilities`
+    // advertised `turn_client`. Fields the caller set itself win.
+    if (method === 'prompt.submit' && this.backendTurnClient) { params = { ...turnClientFields(), ...params } }
 
     let prepared = this.protocol.prepare(method, params)
     const wireMethod = this.protocol.wire(method, prepared)

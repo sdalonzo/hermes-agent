@@ -43,6 +43,15 @@ picks the session policy (send `source: "tui"` for terminal-client behaviour), a
 approval, permission, prompt text or telemetry reads `client`. Hermes does not verify the name,
 so any client can claim any name: never grant anything based on it.
 
+That name belongs to the client that created the session. One session is often continued from
+another app or device, so a client can also name itself on each turn: `prompt.submit` takes an
+optional `client` in the same shape and an optional `form_factor` (`"desktop"`, `"tablet"` or
+`"phone"`). Anything else is refused with `invalid_params`. Both are committed with the turn, and
+`pre_llm_call` plugins receive them as `turn_client`. Hermes renders no prompt text from them, and
+the same rule holds: they are labels, never an authentication. Send them only to an owner whose
+`runtime.describe` lists capability `turn-client-v1` (the legacy sidecar advertises
+`turn_client: true` from `client.capabilities`).
+
 Attach another authenticated viewer with `session.resume({session_id})`, and submit
 through `prompt.submit({session_id, submission_id, text})`. The accepted receipt is durable
 admission, not inference completion. Closing every viewer leaves the execution and its

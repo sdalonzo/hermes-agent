@@ -2008,6 +2008,7 @@ export interface ClientCapabilitiesResult {
   server_requests: string[]
   declines_not_shown?: boolean
   canonical_clarify_batch?: boolean
+  turn_client?: boolean
 }
 /** Client→server method params / server→client request params. Unknown keys are rejected. */
 export type Params = Record<string, never>
@@ -2866,6 +2867,8 @@ export interface PromptSubmitParams {
   surface?: string | null
   voice_context?: string | null
   voice_turn?: boolean | null
+  client?: TurnClient | null
+  form_factor?: string | null
   title_preview?: string | null
   truncate_before_user_ordinal?: number | null
   truncate_before_row_id?: number | null
@@ -2874,6 +2877,11 @@ export interface PromptSubmitParams {
   confirm_empty_truncate?: boolean | null
   confirm_deep_truncate?: boolean | null
   rebind_survivor_row_ids?: number[] | null
+}
+/** The app that sent this turn, in the ``session.create`` ``client`` label shape: ``name`` matches ``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64 printable ASCII without spaces. A label for plugins (``pre_llm_call`` ``turn_client``), never an authentication. */
+export interface TurnClient {
+  name: string
+  version?: string | null
 }
 /** ``status`` is absent only on the typed-stop-phrase reply (``voice_stopped``). After a truncation the survivor row ids let the client rebind its cached ``rowId``s (``None`` map entries: drop the cached id). ``turn_isolation`` marks a compute-host dispatch. */
 export interface PromptSubmitResult {
@@ -5380,6 +5388,8 @@ export interface CanonicalSubmitParams {
   voice_context?: string | null
   interrupted?: boolean
   voice_turn?: boolean
+  client?: CanonicalClientIdentity | null
+  form_factor?: 'desktop' | 'tablet' | 'phone' | null
   display_kind?: 'hidden' | null
   title_preview?: string | null
   turn_author?: CanonicalTurnAuthor | null

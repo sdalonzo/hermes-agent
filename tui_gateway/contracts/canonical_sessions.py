@@ -258,6 +258,10 @@ class CanonicalSubmitParams(CanonicalSessionParams):
     voice_context: str | None = None
     interrupted: bool = False
     voice_turn: bool = False
+    # The client and device kind that sent THIS turn, committed with ``surface_v1``: a label for
+    # ``pre_llm_call`` ``turn_client``, never an authentication (owners advertising ``turn-client-v1``).
+    client: CanonicalClientIdentity | None = None
+    form_factor: Literal['desktop', 'tablet', 'phone'] | None = None
     # Desktop composer presentation, committed per admission (``display_v1``): a hidden widget
     # intent persists ``display_kind=hidden`` (never a user bubble); a large paste's preview is
     # titler input only, never model input.

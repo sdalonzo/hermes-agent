@@ -23,6 +23,23 @@ class ClientSurface(WireEnum):
     voice_live = "voice-live"
 
 
+class FormFactor(WireEnum):
+    """The kind of device that sent this turn (``gateway.session_surface.FORM_FACTORS``)."""
+
+    desktop = "desktop"
+    tablet = "tablet"
+    phone = "phone"
+
+
+class TurnClient(Params):
+    """The app that sent this turn, in the ``session.create`` ``client`` label shape: ``name`` matches
+    ``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64 printable ASCII without spaces. A label for
+    plugins (``pre_llm_call`` ``turn_client``), never an authentication."""
+
+    name: str
+    version: str | None = None
+
+
 class PromptSubmitParams(SessionParams):
     """``text`` is normally a string; the relay / hosted paths may hand a structured (parts list)
     payload, and the busy path renders it. Truncation (rewind / edit / regenerate) needs explicit
@@ -36,6 +53,10 @@ class PromptSubmitParams(SessionParams):
     surface: str | None = None  # a ClientSurface value; unknown values clear the surface
     voice_context: str | None = None  # recent spoken transcript, model input only (voice-live)
     voice_turn: bool | None = None  # a spoken voice-conversation turn: runs on auxiliary.voice_chat
+    # The client and device kind that sent THIS turn (per turn, unlike session.create ``client``);
+    # an invalid value is dropped. Sent only where ``client.capabilities`` advertised ``turn_client``.
+    client: TurnClient | None = None
+    form_factor: str | None = None  # a FormFactor value
     # Desktop-generated large-paste preview (first ~1000 chars); TITLE input only, never the model turn.
     title_preview: str | None = None
     truncate_before_user_ordinal: int | None = None

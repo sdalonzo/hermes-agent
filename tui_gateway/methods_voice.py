@@ -540,7 +540,7 @@ def _(rid, params: dict) -> dict:
             from tui_gateway import server
             server.begin_local_desktop_boot()
     return _ok(rid, {"server_requests": sorted(contracts.SERVER_REQUESTS), "declines_not_shown": True,
-                     "canonical_clarify_batch": True})
+                     "canonical_clarify_batch": True, "turn_client": True})
 
 
 @method("ping")

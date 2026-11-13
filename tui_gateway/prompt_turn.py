@@ -747,6 +747,7 @@ def _prepare_turn_input(sid: str, session: dict, st: _TurnRun, text: Any, images
         run_message = _prepend_note(run_message, SPEECH_INTERRUPTED_NOTE)
     run_message = _prepend_note(run_message, _pending_reaction_notes(session))
     agent._voice_turn_pending = bool(session.pop("voice_turn", False))  # auxiliary.voice_chat route
+    agent._turn_client = dict(session.pop("turn_client", None) or {})  # pre_llm_call ``turn_client``
     return prompt, _prepend_note(run_message, _hud_surface_note(session)), cols, streamer
 
 

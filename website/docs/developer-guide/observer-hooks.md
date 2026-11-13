@@ -119,7 +119,7 @@ These hooks frame the user turn, not individual provider API attempts:
 
 Common `pre_llm_call` fields include `session_id`, `turn_id`,
 `user_message`, `conversation_history`, `is_first_turn`, `model`, `platform`,
-and `sender_id`.
+`sender_id`, and `turn_client` (the app and device kind that sent this turn).
 
 Common `post_llm_call` fields include `session_id`, `turn_id`,
 `user_message`, `assistant_response`, `conversation_history`, `model`, and

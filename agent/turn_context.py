@@ -929,6 +929,9 @@ def _collect_pre_llm_call_context(
             platform=getattr(agent, "platform", None) or "",
             parent_session_id=getattr(agent, "_parent_session_id", None) or "",
             sender_id=getattr(agent, "_user_id", None) or "",
+            # The client that sent THIS turn, as it declared itself on ``prompt.submit``
+            # (``gateway.session_surface``): a label, never an authentication; ``{}`` for none.
+            turn_client=dict(getattr(agent, "_turn_client", None) or {}),
         )
         try:
             # Spill oversized per-hook context to disk so a runaway plugin can't inflate every subsequent

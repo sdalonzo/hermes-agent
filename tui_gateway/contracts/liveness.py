@@ -51,6 +51,11 @@ class ClientCapabilitiesResult(Result):
     #: one card per question. An older owner refuses the unknown key, so a client declares it only when
     #: this is true. (The legacy sidecar always asks the batch at once and is never sent the key.)
     canonical_clarify_batch: bool = False
+    #: This backend admits ``client`` / ``form_factor`` on ``prompt.submit`` (legacy sidecar and
+    #: canonical owner): the client and device kind that sent the turn, handed to ``pre_llm_call`` as
+    #: ``turn_client``. An older canonical owner refuses the unknown keys, so a client sends them only
+    #: when this is true.
+    turn_client: bool = False
 
 
 method("client.capabilities", params=ClientCapabilitiesParams, result=ClientCapabilitiesResult,

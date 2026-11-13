@@ -11729,6 +11729,34 @@
             "title": "Voice Turn",
             "type": "boolean"
           },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CanonicalClientIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "form_factor": {
+            "anyOf": [
+              {
+                "enum": [
+                  "desktop",
+                  "tablet",
+                  "phone"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Form Factor"
+          },
           "display_kind": {
             "anyOf": [
               {
@@ -12381,6 +12409,11 @@
           "canonical_clarify_batch": {
             "default": false,
             "title": "Canonical Clarify Batch",
+            "type": "boolean"
+          },
+          "turn_client": {
+            "default": false,
+            "title": "Turn Client",
             "type": "boolean"
           }
         },
@@ -33696,6 +33729,29 @@
             "default": null,
             "title": "Voice Turn"
           },
+          "client": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TurnClient"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "form_factor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Form Factor"
+          },
           "title_preview": {
             "anyOf": [
               {
@@ -47066,6 +47122,33 @@
           "role"
         ],
         "title": "TranscriptMessage",
+        "type": "object"
+      },
+      "TurnClient": {
+        "additionalProperties": false,
+        "description": "The app that sent this turn, in the ``session.create`` ``client`` label shape: ``name`` matches\n``[a-z0-9][a-z0-9._-]{0,63}``, ``version`` is 1-64 printable ASCII without spaces. A label for\nplugins (``pre_llm_call`` ``turn_client``), never an authentication.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Version"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "TurnClient",
         "type": "object"
       },
       "TurnStatus": {
